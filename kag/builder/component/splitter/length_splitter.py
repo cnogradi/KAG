@@ -156,8 +156,8 @@ class LengthSplitter(BaseTableSplitter):
         output = []
         for idx, sentences in enumerate(splitted):
             chunk = Chunk(
-                id=generate_hash_id(f"{org_chunk.id}#{idx}"),
-                name=f"{org_chunk.name}_split_{idx}",
+                id=f"{generate_hash_id(org_chunk.id)}#{org_chunk.name}_{idx}",
+                name=org_chunk.name,
                 content=sep.join(sentences),
                 type=org_chunk.type,
                 chunk_size=chunk_size,
@@ -195,8 +195,8 @@ class LengthSplitter(BaseTableSplitter):
 
             # 创建新的Chunk对象
             chunk = Chunk(
-                id=generate_hash_id(f"{org_chunk.id}#{chunk_index}"),
-                name=f"{org_chunk.name}_split_{chunk_index}",
+                id=f"{generate_hash_id(org_chunk.id)}#{chunk_index}",
+                name=f"{org_chunk.name}",
                 content=chunk_content,
                 type=org_chunk.type,
                 chunk_size=self.split_length,

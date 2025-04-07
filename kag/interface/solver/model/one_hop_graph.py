@@ -1024,6 +1024,29 @@ class ChunkData(RetrievedData):
     def __str__(self):
         return self.content
 
+class AtomRetrievalInfo(ChunkData):
+    def __init__(self, atom_query:str, atom:str, title:str, content:str, chunk_id:str, score:float):
+        self.atom_query = atom_query
+        self.atom = atom
+        self.title = title
+        self.content = content
+        self.chunk_id = chunk_id
+        self.score = score
+
+    def to_dict(self):
+        return {
+            "content": str(self.content),
+            "title": str(self.title),
+            "chunk_id": str(self.chunk_id),
+            "score": str(self.score)
+        }
+
+    def __repr__(self):
+        return f"AtomRetrievalInfo(content={self.content}, title={self.title}, chunk_id={self.chunk_id}, score={self.score})"
+
+    def __str__(self):
+        return self.content
+
 def parse_entity_relation(one_graph, std_p: str, o_value: EntityData):
     s_entity = one_graph.s
     o_entity = o_value

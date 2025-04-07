@@ -1,3 +1,4 @@
 import kag.solver.executor.retriever.local_knowledge_base.kag_retriever.kag_component
 import kag.solver.executor.retriever.local_knowledge_base.kag_retriever.kag_flow
 import kag.solver.executor.retriever.local_knowledge_base.kag_retriever.kag_hybrid_executor
+import kag.solver.executor.retriever.local_knowledge_base.kag_retriever.kag_atomic_executor

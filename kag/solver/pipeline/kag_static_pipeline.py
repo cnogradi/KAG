@@ -40,7 +40,7 @@ class KAGStaticPipeline(SolverPipelineABC):
         planner: PlannerABC,
         executors: List[ExecutorABC],
         generator: GeneratorABC,
-        max_iteration: int = 10,
+        max_iteration: int = 1,
     ):
         super().__init__()
         self.planner = planner
@@ -96,6 +96,7 @@ class KAGStaticPipeline(SolverPipelineABC):
         if self.planner.check_require_rewrite(task):
             task.update_memory("origin_arguments", task.arguments)
             task.arguments = await self.planner.query_rewrite(task, **kwargs)
+
         executor = self.select_executor(task.executor)
         if executor:
             await executor.ainvoke(query, task, context, **kwargs)
@@ -118,37 +119,42 @@ class KAGStaticPipeline(SolverPipelineABC):
             Final generated answer from the execution context
         """
         context: Context = Context()
-        tasks = await self.planning(query, context, **kwargs)
+        for iter in range(1, self.max_iteration):
+            tasks = await self.planning(query, context, **kwargs)
 
-        for task in tasks:
-            context.add_task(task)
+            for task in tasks:
+                context.add_task(task)
 
-        for task_group in context.gen_task(group=True):
-            await asyncio.gather(
-                *[
-                    asyncio.create_task(
-                        self.execute_task(query, task, context, **kwargs)
-                    )
-                    for task in task_group
-                ]
-            )
+            for task_group in context.gen_task(group=True):
+                await asyncio.gather(
+                    *[
+                        asyncio.create_task(
+                            self.execute_task(query, task, context, **kwargs)
+                        )
+                        for task in task_group
+                    ]
+                )
 
-        answer = await self.generator.ainvoke(query, context, **kwargs)
-        from kag.common.utils import red, green, reset
+            answer = await self.generator.ainvoke(query, context, **kwargs)
+            from kag.common.utils import red, green, reset
 
-        task_info = []
-        for task in context.gen_task(group=False):
-            task_info.append(
-                {
-                    "task": task.arguments,
-                    "memory": task.memory,
-                    "result": task.result,
-                }
-            )
+            task_info = []
+            for task in context.gen_task(group=False):
+                task_info.append(
+                    {
+                        "task": task.arguments,
+                        "memory": task.memory,
+                        "result": task.result,
+                    }
+                )
+
+            if task:
+                break
+
         if answer is None:
-            print(f"{red}Failed to answer quesion: {query}\nTasks:{task_info}\n{reset}")
+            logger.warn(f"{red}Failed to answer quesion: {query}\nTasks:{task_info}\n{reset}")
             return "UNKNOWN"
-        print(
+        logger.info(
             f"{green}Input Query: {query}\n\nTasks:\n\n{task_info}\n\nFinal Answer: {answer}\nGold Answer: {kwargs.get('gold')}{reset}"
         )
         return answer

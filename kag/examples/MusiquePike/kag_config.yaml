@@ -1,0 +1,102 @@
+#------------project configuration start----------------#
+openie_llm: &openie_llm
+  api_key:
+  base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+  model: qwen2.5-72b-instruct
+  type: maas
+
+ner_llm: &ner_llm
+  api_key:
+  base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+  model: qwen2.5-72b-instruct
+  type: maas
+
+chat_llm: &chat_llm
+  api_key:
+  base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+  model: qwen2.5-72b-instruct
+  type: maas
+
+vectorize_model: &vectorize_model
+  api_key:
+  base_url: https://api.siliconflow.cn/v1/
+  model: BAAI/bge-m3
+  type: openai
+  vector_dimensions: 1024
+vectorizer: *vectorize_model
+
+log:
+  level: INFO
+
+project:
+  biz_scene: default
+  host_addr: http://127.0.0.1:8887
+  id: '2'
+  language: en
+  namespace: MusiquePike
+#------------project configuration end----------------#
+
+
+#------------pike atomic question injection start----------------#
+kag_atomic_chunk_extractor_pipeline:
+  chain:
+    type: kag_atomic_chunk_extractor_chain # kag.builder.default_chain.PikeChunkInjectionChain
+    decomposer:
+      type: atomic_question_chunk_extractor # kag.builder.component.decomposer.atomic_chunk_question_decomposerr.AtomicQuestionChunkDecomposer
+      llm: *openie_llm
+      decomposition_prompt:
+        type: atomic_question_extraction_prompt # kag.builder.prompt.decomposer.pike_decomposition.DecompositionGenerater
+    reader:
+      type: dict_reader # kag.builder.component.reader.dict_reader.DictReader
+    splitter:
+      type: length_splitter # kag.builder.component.splitter.length_splitter.LengthSplitter
+      split_length: 100000
+      window_length: 0
+    vectorizer:
+      type: batch_vectorizer # kag.builder.component.vectorizer.batch_vectorizer.BatchVectorizer
+      vectorize_model: *vectorize_model
+    writer:
+      type: kg_writer # kag.builder.component.writer.kg_writer.KGWriter
+  num_threads_per_chain: 1
+  num_chains: 10
+  scanner:
+    type: musique_dataset_scanner # kag.builder.component.scanner.dataset_scanner.MusiqueCorpusScanner
+#------------pike atomic query injection end----------------#
+
+#------------kag-solver configuration start----------------#
+search_api: &search_api
+  type: openspg_search_api #kag.solver.tools.search_api.impl.openspg_search_api.OpenSPGSearchAPI
+
+graph_api: &graph_api
+  type: openspg_graph_api #kag.solver.tools.graph_api.impl.openspg_graph_api.OpenSPGGraphApi
+
+kag_atomic_executor: &kag_atomic_executor
+  type: kag_atomic_executor
+  search_client: *search_api
+  graph_client: *graph_api
+  vectorizer: *vectorize_model
+  llm_client: *openie_llm
+  query_decomposition_prompt:
+    type: atomic_query_decomposition_prompt
+  atomic_question_selection_prompt:
+    type: atomic_question_selection_prompt
+
+kag_solver_pipeline:
+  type: kag_static_pipeline
+  max_iteration: 4
+  planner:
+    type: kag_static_planner
+    llm: *chat_llm
+    plan_prompt:
+      type: default_static_planning
+    rewrite_prompt:
+      type: default_query_rewrite
+  executors:
+    - *kag_atomic_executor
+  generator:
+    type: llm_generator
+    llm_client: *chat_llm
+    generated_prompt:
+      type: resp_simple
+
+#------------kag-solver configuration end----------------#
