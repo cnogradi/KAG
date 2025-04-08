@@ -32,5 +32,5 @@ class VectorizerABC(BuilderComponent):
         return SubGraph
 
     @property
-    def ckpt_subdir(self):
-        return "vectorizer"
+    def inherit_input_key(self):
+        return True

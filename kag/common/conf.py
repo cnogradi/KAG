@@ -77,10 +77,6 @@ class KAGGlobalConf:
             setattr(self, k, v)
         self._extra = kwargs
 
-        print(
-            f"Done initialize project config with host addr {self.host_addr} and project_id {self.project_id}"
-        )
-
 
 def _closest_cfg(
     path: Union[str, os.PathLike] = ".",
@@ -116,6 +112,8 @@ def load_config(prod: bool = False, config_file: str = None):
         host_addr = os.getenv(KAGConstants.ENV_KAG_PROJECT_HOST_ADDR)
         project_client = ProjectClient(host_addr=host_addr, project_id=project_id)
         project = project_client.get_by_id(project_id)
+        if not project:
+            return {}
         config = json.loads(project.config)
         if "project" not in config:
             config["project"] = {
@@ -155,7 +153,11 @@ class KAGConfigMgr:
             log_level = log_conf.get("level", "INFO")
         else:
             log_level = "INFO"
-        logging.basicConfig(level=logging.getLevelName(log_level))
+        logging.basicConfig(
+            level=logging.getLevelName(log_level),
+            format='%(asctime)s - %(levelname)s - %(name)s - %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S'
+        )
         logging.getLogger("neo4j.notifications").setLevel(logging.ERROR)
         logging.getLogger("neo4j.io").setLevel(logging.INFO)
         logging.getLogger("neo4j.pool").setLevel(logging.INFO)
@@ -176,6 +178,12 @@ class KAGConfigMgr:
     @property
     def all_config(self):
         return copy.deepcopy(self.config)
+
+    def update_conf(self, configs: dict):
+        for k,v in configs.items():
+            if k not in self.config:
+                self.config[k] = v
+
 
 
 KAG_CONFIG = KAGConfigMgr()
@@ -202,9 +210,4 @@ def init_env(config_file: str = None):
     if len(KAG_CONFIG.all_config) > 0:
         dump_flag = os.getenv(KAGConstants.ENV_KAG_DEBUG_DUMP_CONFIG)
         if dump_flag is not None and dump_flag.strip() == "1":
-            print(f"{msg}:")
             pprint.pprint(KAG_CONFIG.all_config, indent=2)
-        else:
-            print(
-                f"{msg}: set {KAGConstants.ENV_KAG_DEBUG_DUMP_CONFIG}=1 to dump config"
-            )

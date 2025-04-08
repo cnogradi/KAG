@@ -10,16 +10,10 @@
 # or implied.
 
 from typing import Union, Iterable
-from openai import OpenAI, AzureOpenAI
+from openai import OpenAI, AsyncOpenAI, AzureOpenAI, AsyncAzureOpenAI
 from kag.interface import VectorizeModelABC, EmbeddingVector
 from typing import Callable
 import logging
-from tenacity import retry, stop_after_attempt
-
-import time
-import concurrent.futures
-import matplotlib.pyplot as plt
-
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +32,9 @@ class OpenAIVectorizeModel(VectorizeModelABC):
         base_url: str = "",
         vector_dimensions: int = None,
         timeout: float = None,
+        max_rate: float = 1000,
+        time_period: float = 1,
+        **kwargs,
     ):
         """
         Initializes the OpenAIVectorizeModel instance.
@@ -48,14 +45,16 @@ class OpenAIVectorizeModel(VectorizeModelABC):
             base_url (str, optional): The base URL for the OpenAI service. Defaults to "".
             vector_dimensions (int, optional): The number of dimensions for the embedding vectors. Defaults to None.
         """
-        super().__init__(vector_dimensions)
+        name = kwargs.get("name", None)
+        if not name:
+            name = f"{api_key}{base_url}{model}"
+
+        super().__init__(name, vector_dimensions, max_rate, time_period)
         self.model = model
         self.timeout = timeout
         self.client = OpenAI(api_key=api_key, base_url=base_url)
-        self.base_url = base_url
-        self.api_key = api_key
+        self.aclient = AsyncOpenAI(api_key=api_key, base_url=base_url)
 
-    @retry(stop=stop_after_attempt(3))
     def vectorize(
         self, texts: Union[str, Iterable[str]]
     ) -> Union[EmbeddingVector, Iterable[EmbeddingVector]]:
@@ -120,6 +119,30 @@ class OpenAIVectorizeModel(VectorizeModelABC):
             assert len(results) == len(texts)
             return results
 
+    async def avectorize(
+        self, texts: Union[str, Iterable[str]]
+    ) -> Union[EmbeddingVector, Iterable[EmbeddingVector]]:
+        """
+        Vectorizes a text string into an embedding vector or multiple text strings into multiple embedding vectors.
+
+        Args:
+            texts (Union[str, Iterable[str]]): The text or texts to vectorize.
+
+        Returns:
+            Union[EmbeddingVector, Iterable[EmbeddingVector]]: The embedding vector(s) of the text(s).
+        """
+        async with self.limiter:
+            results = await self.aclient.embeddings.create(
+                input=texts, model=self.model, timeout=self.timeout
+            )
+        results = [item.embedding for item in results.data]
+        if isinstance(texts, str):
+            assert len(results) == 1
+            return results[0]
+        else:
+            assert len(results) == len(texts)
+            return results
+
 
 @VectorizeModelABC.register("azure_openai")
 class AzureOpenAIVectorizeModel(VectorizeModelABC):
@@ -138,6 +161,8 @@ class AzureOpenAIVectorizeModel(VectorizeModelABC):
         azure_deployment: str = None,
         azure_ad_token: str = None,
         azure_ad_token_provider: Callable = None,
+        max_rate: float = 1000,
+        time_period: float = 1,
     ):
         """
         Initializes the AzureOpenAIVectorizeModel instance.
@@ -153,10 +178,19 @@ class AzureOpenAIVectorizeModel(VectorizeModelABC):
             azure_deployment: A model deployment, if given sets the base client URL to include `/deployments/{azure_deployment}`.
                 Note: this means you won't be able to use non-deployment endpoints. Not supported with Assistants APIs.
         """
-        super().__init__(vector_dimensions)
+        super().__init__(vector_dimensions, max_rate, time_period)
         self.model = model
         self.timeout = timeout
         self.client = AzureOpenAI(
+            api_key=api_key,
+            base_url=base_url,
+            azure_deployment=azure_deployment,
+            model=model,
+            api_version=api_version,
+            azure_ad_token=azure_ad_token,
+            azure_ad_token_provider=azure_ad_token_provider,
+        )
+        self.aclient = AsyncAzureOpenAI(
             api_key=api_key,
             base_url=base_url,
             azure_deployment=azure_deployment,
@@ -189,101 +223,26 @@ class AzureOpenAIVectorizeModel(VectorizeModelABC):
             assert len(results) == len(texts)
             return results
 
+    async def avectorize(
+        self, texts: Union[str, Iterable[str]]
+    ) -> Union[EmbeddingVector, Iterable[EmbeddingVector]]:
+        """
+        Vectorizes a text string into an embedding vector or multiple text strings into multiple embedding vectors.
 
-def test_single_request(client):
-    """测试单个请求"""
-    start_time = time.time()
-    client.vectorize("Hello, world!")
-    return time.time() - start_time
+        Args:
+            texts (Union[str, Iterable[str]]): The text or texts to vectorize.
 
-
-def test_concurrent_requests(client, num_requests, max_workers):
-    """测试并发请求"""
-    texts = [f"Hello, world! {i}" for i in range(num_requests)]
-    start_time = time.time()
-
-    results = []
-    success_count = 0
-    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        future_to_text = {
-            executor.submit(client.vectorize, text): text for text in texts
-        }
-        for future in concurrent.futures.as_completed(future_to_text):
-            try:
-                result = future.result()
-                success_count += 1
-                results.append(result)
-            except Exception as e:
-                print(f"请求失败: {e}")
-
-    total_time = time.time() - start_time
-    return total_time, success_count, num_requests
-
-
-def run_concurrency_test():
-    # 创建客户端
-    client = VectorizeModelABC.from_config(
-        {
-            "api_key": "",
-            "base_url": "https://api.siliconflow.cn/v1/",
-            "model": "BAAI/bge-m3",
-            "type": "openai",
-        }
-    )
-
-    # 测试单个请求的响应时间
-    single_request_time = test_single_request(client)
-    print(f"单个请求响应时间: {single_request_time:.4f}秒")
-
-    # 测试不同并发度
-    concurrency_levels = [1, 5, 10, 20, 50, 100]
-    total_requests = 100  # 每个并发度总共发送的请求数
-
-    times = []
-    success_rates = []
-    throughputs = []
-
-    for concurrency in concurrency_levels:
-        print(f"\n测试并发度: {concurrency}")
-        total_time, success_count, total = test_concurrent_requests(
-            client, total_requests, concurrency
-        )
-        success_rate = (success_count / total) * 100
-        throughput = success_count / total_time if total_time > 0 else 0
-
-        times.append(total_time)
-        success_rates.append(success_rate)
-        throughputs.append(throughput)
-
-        print(f"总时间: {total_time:.2f}秒")
-        print(f"成功率: {success_rate:.2f}%")
-        print(f"吞吐量: {throughput:.2f}请求/秒")
-
-    # 绘制结果图表
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 15))
-
-    ax1.plot(concurrency_levels, times, "o-")
-    ax1.set_xlabel("并发度")
-    ax1.set_ylabel("总时间 (秒)")
-    ax1.set_title("并发度 vs 总时间")
-    ax1.grid(True)
-
-    ax2.plot(concurrency_levels, success_rates, "o-")
-    ax2.set_xlabel("并发度")
-    ax2.set_ylabel("成功率 (%)")
-    ax2.set_title("并发度 vs 成功率")
-    ax2.grid(True)
-
-    ax3.plot(concurrency_levels, throughputs, "o-")
-    ax3.set_xlabel("并发度")
-    ax3.set_ylabel("吞吐量 (请求/秒)")
-    ax3.set_title("并发度 vs 吞吐量")
-    ax3.grid(True)
-
-    plt.tight_layout()
-    plt.savefig("concurrency_test_results.png")
-    plt.show()
-
-
-if __name__ == "__main__":
-    run_concurrency_test()
+        Returns:
+            Union[EmbeddingVector, Iterable[EmbeddingVector]]: The embedding vector(s) of the text(s).
+        """
+        async with self.limiter:
+            results = await self.aclient.embeddings.create(
+                input=texts, model=self.model, timeout=self.timeout
+            )
+        results = [item.embedding for item in results.data]
+        if isinstance(texts, str):
+            assert len(results) == 1
+            return results[0]
+        else:
+            assert len(results) == len(texts)
+            return results

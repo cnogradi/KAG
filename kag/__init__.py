@@ -213,10 +213,6 @@ init_env()
 import kag.interface
 import kag.interface.solver.execute
 import kag.interface.solver.plan
-import kag.solver.execute
-import kag.solver.plan
-import kag.solver.retriever
-import kag.solver.tools
 import kag.builder.component
 import kag.builder.default_chain
 import kag.builder.runner
@@ -228,6 +224,7 @@ import kag.common.rate_limiter
 import kag.common.checkpointer
 import kag.solver
 import kag.bin.commands
+import kag.tools
 
 try:
     import kag_ant
