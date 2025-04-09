@@ -1,16 +1,18 @@
 import argparse
-import json
+import asyncio
 import logging
 import time
-from concurrent.futures import ThreadPoolExecutor, as_completed
+
+import aiofiles
+import json
 from typing import List
 
 from tqdm import tqdm
 from kag.common.conf import KAG_CONFIG
-from kag.common.registry import import_modules_from_path
-from kag.solver.logic.solver_pipeline import SolverPipeline
+from kag.interface import SolverPipelineABC
 
-from kag.common.checkpointer import CheckpointerManager, CheckPointer
+from kag.common.checkpointer import CheckpointerManager
+from kag.solver.reporter.trace_log_reporter import TraceLogReporter
 
 logger = logging.getLogger(__name__)
 
@@ -20,25 +22,36 @@ class EvalQa:
         self.solver_pipeline_name = solver_pipeline_name
         self.task_name = task_name
 
-    def qa(self, query):
-        resp = SolverPipeline.from_config(KAG_CONFIG.all_config[self.solver_pipeline_name])
-        answer, trace_log = resp.run(query)
-        logger.info(f"\n\nso the answer for '{query}' is: {answer}\n\n")
-        return answer, trace_log
+    async def qa(self, query, gold):
+        reporter: TraceLogReporter = TraceLogReporter()
 
-    def process_sample(self, data):
+        pipeline = SolverPipelineABC.from_config(
+            KAG_CONFIG.all_config[self.solver_pipeline_name]
+        )
+        answer = await pipeline.ainvoke(query, reporter=reporter, gold=gold)
+
+        logger.info(f"\n\nso the answer for '{query}' is: {answer}\n\n")
+
+        info, status = reporter.generate_report_data()
+        return answer, {"info": info.to_dict(), "status": status}
+
+    async def async_process_sample(self, data):
+        sample_idx, sample, ckpt = data
+        question = sample["question"]
+        gold = sample["answer"]
         try:
-            sample_idx, sample, ckpt = data
-            question = sample["question"]
-            gold = sample["answer"]
             if ckpt and question in ckpt:
                 print(f"found existing answer to question: {question}")
                 prediction, trace_log = ckpt.read_from_ckpt(question)
             else:
-                prediction, trace_log = self.qa(question)
+                prediction, trace_log = await self.qa(query=question, gold=gold)
                 if ckpt:
                     ckpt.write_to_ckpt(question, (prediction, trace_log))
             metrics = self.do_metrics_eval([prediction], [gold])
+            recall_metrics = self.do_recall_eval(
+                sample, trace_log["info"].get("reference", [])
+            )
+            metrics.update(recall_metrics)
             return sample_idx, prediction, metrics, trace_log
         except Exception as e:
             import traceback
@@ -50,6 +63,9 @@ class EvalQa:
 
     def do_metrics_eval(self, predictions: List[str], golds: List[str]):
         raise NotImplementedError("do_eval need implement")
+
+    def do_recall_eval(self, sample, references):
+        return {"recall": None}
 
     def do_total_metrics_process(self, metrics_list: List[dict]):
         total_metrics = {
@@ -72,40 +88,49 @@ class EvalQa:
                 res_metrics[k] = v * 1.0 / len(metrics_list)
         return res_metrics
 
-    def parallel_qa_and_evaluate(self, qa_list, res_file_path, thread_num=1, upper_limit=10):
+    async def parallel_qa_and_evaluate(
+        self, qa_list, res_file_path, thread_num=1, upper_limit=10
+    ):
         ckpt = CheckpointerManager.get_checkpointer(
             {"type": "zodb", "ckpt_dir": "ckpt"}
         )
         res_qa = []
-        with ThreadPoolExecutor(max_workers=thread_num) as executor:
-            futures = [
-                executor.submit(self.process_sample, (sample_idx, sample, ckpt))
-                for sample_idx, sample in enumerate(qa_list[:upper_limit])
-            ]
-            metrics_list = []
-            for future in tqdm(
-                    as_completed(futures),
-                    total=len(futures),
-                    desc=f"parallelQaAndEvaluate {self.task_name} completing: ",
-            ):
-                result = future.result()
-                if result is not None:
-                    sample_idx, prediction, metrics, traceLog = result
-                    sample = qa_list[sample_idx]
+        semaphore = asyncio.Semaphore(thread_num)  # 控制并发度
 
-                    sample["prediction"] = prediction
-                    sample["traceLog"] = traceLog
-                    sample["metrics"] = metrics
-                    metrics_list.append(metrics)
-                    res_qa.append(sample)
+        async def bounded_process_sample(data):
+            async with semaphore:
+                return await self.async_process_sample(data)
 
-                    if sample_idx % 20 == 0:
-                        with open(res_file_path, "w") as f:
-                            json.dump(res_qa, f)
-        with open(res_file_path, "w") as f:
-            json.dump(res_qa, f)
+        tasks = [
+            asyncio.create_task(bounded_process_sample((sample_idx, sample, ckpt)))
+            for sample_idx, sample in enumerate(qa_list[:upper_limit])
+        ]
+        metrics_list = []
+        for task in tqdm(
+            asyncio.as_completed(tasks),
+            total=len(tasks),
+            desc=f"parallelQaAndEvaluate {self.task_name} completing: ",
+        ):
+            result = await task
+            if result is not None:
+                sample_idx, prediction, metrics, traceLog = result
+                sample = qa_list[sample_idx]
+
+                sample["prediction"] = prediction
+                sample["traceLog"] = traceLog
+                sample["metrics"] = metrics
+                metrics_list.append(metrics)
+                res_qa.append(sample)
+
+                if sample_idx % 20 == 0:
+                    await self.async_write_json(res_file_path, res_qa)
+        await self.async_write_json(res_file_path, res_qa)
 
         return res_qa, metrics_list
+
+    async def async_write_json(self, file_path, data):
+        async with aiofiles.open(file_path, "w") as f:
+            await f.write(json.dumps(data))
 
     def load_data(self, file_path):
         """
@@ -124,8 +149,14 @@ class EvalQa:
         result_metrics_file_path = f"{self.task_name}_metrics_{start_time}.json"
         result_test_file_path = f"{self.task_name}_res_{start_time}.json"
         qa_list = self.load_data(file_path)
-        qa_list_res, metrics_list = self.parallel_qa_and_evaluate(qa_list, result_test_file_path, thread_num=thread_num,
-                                                                  upper_limit=upper_limit)
+        qa_list_res, metrics_list = asyncio.run(
+            self.parallel_qa_and_evaluate(
+                qa_list,
+                result_test_file_path,
+                thread_num=thread_num,
+                upper_limit=upper_limit,
+            )
+        )
         total_metrics = self.do_total_metrics_process(metrics_list)
         total_metrics["cost"] = time.time() - start_time
         total_metrics["task_name"] = self.task_name
@@ -133,6 +164,7 @@ class EvalQa:
             json.dump(total_metrics, f)
         print(total_metrics)
         return total_metrics
+
 
 def do_main(qa_file_path, thread_num, upper_limit, eval_obj, collect_file=None):
     result = eval_obj.eval_main(qa_file_path, thread_num, upper_limit)
@@ -142,7 +174,8 @@ def do_main(qa_file_path, thread_num, upper_limit, eval_obj, collect_file=None):
     print(metrics_lines)
     if collect_file:
         with open(collect_file, "a") as f:
-            f.writelines("\n"+metrics_lines)
+            f.writelines("\n" + metrics_lines)
+
 
 def running_paras():
     parser = argparse.ArgumentParser(description="qa args")
@@ -150,5 +183,7 @@ def running_paras():
     parser.add_argument("--qa_file", type=str, help="test file name in /data")
     parser.add_argument("--thread_num", type=int, help="thread num to run", default=10)
     parser.add_argument("--upper_limit", type=int, help="upper limit", default=1000)
-    parser.add_argument("--res_file", type=str, help="record store file", default="benchmark.txt")
+    parser.add_argument(
+        "--res_file", type=str, help="record store file", default="benchmark.txt"
+    )
     return parser

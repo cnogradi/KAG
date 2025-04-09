@@ -13,7 +13,6 @@
 import time
 import json
 from kag.interface import LLMClient
-from kag.interface.common.rate_limiter import RateLimiter
 
 
 @LLMClient.register("mock")
@@ -24,15 +23,20 @@ class MockLLMClient(LLMClient):
     This class provides a method to simulate the behavior of a language model client by matching input prompts.
     """
 
-    def __init__(self, rate_limiter: RateLimiter = None, **kwargs):
+    def __init__(
+        self,
+        max_rate: float = 1000,
+        time_period: float = 1,
+        **kwargs,
+    ):
         """
         Initializes the MockLLMClient instance.
-
-        Args:
-            rate_limiter (RateLimiter, optional): An instance of RateLimiter to control the rate of requests. Defaults to None.
-            **kwargs: Additional keyword arguments that can be passed to the client.
         """
-        super().__init__(rate_limiter, **kwargs)
+        name = kwargs.get("name", None)
+        if not name:
+            name = "mock"
+
+        super().__init__(name, max_rate, time_period)
 
     def match_input(self, prompt):
         """
@@ -82,8 +86,14 @@ class MockLLMClient(LLMClient):
             ]
         return "I am an intelligent assistant"
 
-    def __call__(self, prompt):
+    def __call__(self, prompt, **kwargs):
         return json.dumps(self.match_input(prompt))
 
-    def call_with_json_parse(self, prompt):
+    def call_with_json_parse(self, prompt, **kwargs):
+        return self.match_input(prompt)
+
+    async def acall(self, prompt, **kwargs):
+        return json.dumps(self.match_input(prompt))
+
+    async def acall_with_json_parse(self, prompt, **kwargs):
         return self.match_input(prompt)

@@ -17,14 +17,13 @@ import traceback
 import logging
 import threading
 from typing import Dict
-from tqdm import tqdm
-
+from tqdm.asyncio import tqdm
 from kag.common.conf import KAG_PROJECT_CONF
 from kag.common.registry import Registrable
 from kag.common.utils import reset, bold, red, generate_hash_id
 from kag.common.checkpointer import CheckpointerManager
 from kag.interface import KAGBuilderChain, ScannerABC
-
+from kag.interface.builder.base import BuilderComponentData
 from kag.builder.model.sub_graph import SubGraph
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor, as_completed
 from kag.common.registry import import_modules_from_path
@@ -86,6 +85,7 @@ class BuilderChainRunner(Registrable):
         chain: KAGBuilderChain,
         num_chains: int = 2,
         num_threads_per_chain: int = 8,
+        max_concurrency: int = 100,
     ):
         """
         Initializes the BuilderChainRunner instance.
@@ -101,6 +101,7 @@ class BuilderChainRunner(Registrable):
         self.chain = chain
         self.num_chains = num_chains
         self.num_threads_per_chain = num_threads_per_chain
+        self.max_concurrency = max_concurrency
         self.ckpt_dir = KAG_PROJECT_CONF.ckpt_dir
 
         # self.checkpointer = CheckpointerManager.get_checkpointer(
@@ -129,27 +130,11 @@ class BuilderChainRunner(Registrable):
             input: The input data to be processed.
         """
 
-        # def process(thread_local, chain_conf, data, data_id, data_abstract):
-        #     try:
-        #         if not hasattr(thread_local, "chain"):
-        #             if chain_conf:
-        #                 thread_local.chain = KAGBuilderChain.from_config(chain_conf)
-        #             else:
-        #                 thread_local.chain = self.chain
-        #         result = thread_local.chain.invoke(
-        #             data, max_workers=self.num_threads_per_chain
-        #         )
-        #         return data, data_id, data_abstract, result
-        #     except Exception:
-        #         traceback.print_exc()
-        #         return None
-
         def process(data, data_id, data_abstract):
             try:
                 result = self.chain.invoke(
                     data,
                     max_workers=self.num_threads_per_chain,
-                    processed_chunk_keys=self.processed_chunks.keys(),
                 )
                 return data, data_id, data_abstract, result
             except Exception:
@@ -157,7 +142,6 @@ class BuilderChainRunner(Registrable):
                 return None
 
         futures = []
-        print(f"Processing {input}")
         success = 0
         try:
             with ThreadPoolExecutor(self.num_chains) as executor:
@@ -174,6 +158,8 @@ class BuilderChainRunner(Registrable):
                     futures.append(fut)
 
                 success = 0
+                from tqdm import tqdm
+
                 for future in tqdm(
                     as_completed(futures),
                     total=len(futures),
@@ -187,7 +173,10 @@ class BuilderChainRunner(Registrable):
                         num_nodes = 0
                         num_edges = 0
                         num_subgraphs = 0
+
                         for item in chain_output:
+                            if isinstance(item, BuilderComponentData):
+                                item = item.data
                             if isinstance(item, SubGraph):
                                 num_nodes += len(item.nodes)
                                 num_edges += len(item.edges)

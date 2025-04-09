@@ -30,5 +30,5 @@ class PostProcessorABC(BuilderComponent):
         return SubGraph
 
     @property
-    def ckpt_subdir(self):
-        return "post_processor"
+    def inherit_input_key(self):
+        return True
