@@ -95,7 +95,7 @@ class KAGStaticPipeline(SolverPipelineABC):
         """
         if self.planner.check_require_rewrite(task):
             task.update_memory("origin_arguments", task.arguments)
-            task.arguments = await self.planner.query_rewrite(task, **kwargs)
+            task.arguments = self.planner.query_rewrite(task, **kwargs)
 
         executor = self.select_executor(task.executor)
         if executor:
@@ -148,6 +148,7 @@ class KAGStaticPipeline(SolverPipelineABC):
                     }
                 )
 
+            # if 'reference' not in answer:
             if task:
                 break
 

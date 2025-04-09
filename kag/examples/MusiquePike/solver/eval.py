@@ -32,13 +32,14 @@ class EvaForMusique(EvalQa):
             golds.append(eva_obj.generate_id(sample['paragraphs'][idx]['title'], sample['paragraphs'][idx]['paragraph_text']))
         return eva_obj.recall_top(predictionlist=references, goldlist=golds)
 
-    def do_metrics_eval(self, predictions: List[str], golds: List[str]):
+    def do_metrics_eval(self, predictions: List[str], golds: List[str], questions: List[str] = []):
         eva_obj = Evaluate()
-        return eva_obj.getBenchMark(predictions, golds)
+        return eva_obj.getBenchMark(predictions, golds, questions)
 
 
 if __name__ == "__main__":
     import_modules_from_path("./prompt")
+    import_modules_from_path("./executors")
     delay_run(hours=0)
     # 解析命令行参数
     parser = running_paras()

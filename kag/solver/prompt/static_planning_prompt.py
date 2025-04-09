@@ -41,17 +41,6 @@ class DefaultStaticPlanningPrompt(PromptABC):
                             "optional": False,
                         },
                     },
-                },
-                {
-                    "name": "Math",
-                    "description": "Used to address users' math or computational problems.",
-                    "parameters": {
-                        "query": {
-                            "type": "string",
-                            "description": "The computable problem derived from the user's input question, retaining the essential information for the calculation target and dependencies.",
-                            "optional": False,
-                        }
-                    },
                 }
             ],
             "output": {
@@ -101,17 +90,6 @@ Note:
                             "optional": False,
                         },
                     },
-                },
-                {
-                    "name": "Math",
-                    "description": "Used to address users' math or computational problems.",
-                    "parameters": {
-                        "query": {
-                            "type": "string",
-                            "description": "The computable problem derived from the user's input question, retaining the essential information for the calculation target and dependencies.",
-                            "optional": False,
-                        }
-                    },
                 }
             ],
             "output": {
@@ -126,14 +104,7 @@ Note:
                     "executor": "Retriever",
                     "dependent_task_ids": [],
                     "arguments": {"query": "List of movies Andy Lau has starred in"},
-                },
-                "2": {
-                    "executor": "Code",
-                    "dependent_task_ids": ["0", "1"],
-                    "arguments": {
-                        "query": "Please write Python code to find the common elements in the following two lists:\nJacky Cheung movie list: {{0.output}}\nAndy Lau movie list: {{1.output}}"
-                    },
-                },
+                }
             },
         },
     }

@@ -16,5 +16,5 @@ class LLMJudger(Registrable):
     def judge_by_llm(self, question: str, prediction: str, gold: str):
         language = KAG_PROJECT_CONF.language
         prompt = JudgerPrompt(language)
-        response = self.llm.invoke({"question": question, "prediction": prediction, "gold": gold}, prompt)
+        response = self.llm.invoke({"question": question, "prediction": prediction, "gold": gold}, prompt, with_json_parse=False)
         return response

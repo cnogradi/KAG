@@ -6,7 +6,9 @@ from .LLMJudger import LLMJudger
 from .evaUtils import get_em_f1
 from .evaUtils import compare_summarization_answers
 from .evaUtils import compute_rouge
+from ..conf import KAG_CONFIG
 from ..utils import processing_phrases
+from ...interface import LLMClient
 
 
 class Evaluate:
@@ -16,6 +18,7 @@ class Evaluate:
 
     def __init__(self, embedding_factory="text-embedding-ada-002"):
         self.embedding_factory = embedding_factory
+
     def generate_id(self, title, content):
         return processing_phrases(f"{title}\n{content}").replace("\n", "")
 
@@ -41,8 +44,10 @@ class Evaluate:
         rouge_ls = [score["rouge-l"]["f"] for score in rouge_scores]
         average_rouge_l = sum(rouge_ls) / len(rouge_ls)
         return {"rouge-L": average_rouge_l}
+
     def convert_chunk_data_2_str(self, predictionlist: list):
         return [processing_phrases(chunk_data["content"]).replace("\n", "") for chunk_data in predictionlist]
+
     def recall_top(self, predictionlist: list, goldlist: List[str]):
         """
                Calculate recall for top-3, top-5, and all predictions.
@@ -68,21 +73,20 @@ class Evaluate:
         false_negatives_top3 = len(gold_set - top3_set)
 
         recall_top3 = true_positives_top3 / (true_positives_top3 + false_negatives_top3) if (
-                                                                                                        true_positives_top3 + false_negatives_top3) > 0 else 0.0
+                                                                                                    true_positives_top3 + false_negatives_top3) > 0 else 0.0
 
         # Update counters for top-5
         true_positives_top5 = len(gold_set.intersection(top5_set))
         false_negatives_top5 = len(gold_set - top5_set)
 
-
         recall_top5 = true_positives_top5 / (true_positives_top5 + false_negatives_top5) if (
-                                                                                                        true_positives_top5 + false_negatives_top5) > 0 else 0.0
+                                                                                                    true_positives_top5 + false_negatives_top5) > 0 else 0.0
         # Update counters for all
         true_positives_all = len(gold_set.intersection(all_set))
         false_negatives_all = len(gold_set - all_set)
 
         recall_all = true_positives_all / (true_positives_all + false_negatives_all) if (
-                                                                                                    true_positives_all + false_negatives_all) > 0 else 0.0
+                                                                                                true_positives_all + false_negatives_all) > 0 else 0.0
 
         return {
             "recall_top3": recall_top3,
@@ -90,8 +94,7 @@ class Evaluate:
             "recall_all": recall_all
         }
 
-
-    def getBenchMark(self, predictionlist: List[str], goldlist: List[str]):
+    def getBenchMark(self, predictionlist: List[str], goldlist: List[str], questionList: List[str] = []):
         """
         Calculates and returns evaluation metrics between predictions and ground truths.
 
@@ -106,7 +109,7 @@ class Evaluate:
         dict: Dictionary containing EM, F1 score, and answer similarity.
         """
         # Initialize total metrics
-        total_metrics = {"em": 0.0, "f1": 0.0, "answer_similarity": 0.0}
+        total_metrics = {"em": 0.0, "f1": 0.0, "llm_accuracy": 0.0}
 
         # Iterate over prediction and gold lists to calculate EM and F1 scores
         for prediction, gold in zip(predictionlist, goldlist):
@@ -121,19 +124,21 @@ class Evaluate:
         total_metrics["f1"] /= len(predictionlist)
 
         # Call method to calculate answer similarity
-        total_metrics["answer_similarity"] = self.evaForSimilarity(
-            predictionlist, goldlist
+        consistency_metric = self.getLLMBenchMark(
+            predictionlist=predictionlist, goldlist=goldlist, questionList=questionList,
+            llm_client=LLMClient.from_config(KAG_CONFIG.all_config["chat_llm"])
         )
+        total_metrics["llm_accuracy"] = consistency_metric["consistency"]
 
         # Return evaluation metrics dictionary
         return total_metrics
 
     def getLLMBenchMark(
-        self,
-        llm_client,
-        questionList: List[str],
-        predictionlist: List[str],
-        goldlist: List[str],
+            self,
+            llm_client,
+            questionList: List[str],
+            predictionlist: List[str],
+            goldlist: List[str],
     ):
         """
         Calculates and returns evaluation metrics between predictions and ground truths.
@@ -157,9 +162,9 @@ class Evaluate:
         hits = 0
         for question, prediction, gold in zip(questionList, predictionlist, goldlist):
             resposne = llm_judger.judge_by_llm(
-                question=question, prediction=prediction, gold=gold
+                question=question, prediction=prediction, gold=gold,
             )
-            if resposne.lower() == "true":
+            if resposne.lower() == "yes":
                 hits += 1
 
         # Calculate consistency
@@ -167,17 +172,17 @@ class Evaluate:
         return total_metrics
 
     def getSummarizationMetrics(
-        self,
-        queries: List[str],
-        answers1: List[str],
-        answers2: List[str],
-        *,
-        api_key="EMPTY",
-        base_url="http://127.0.0.1:38080/v1",
-        model="gpt-4o-mini",
-        language="English",
-        retries=3,
-        max_workers=50,
+            self,
+            queries: List[str],
+            answers1: List[str],
+            answers2: List[str],
+            *,
+            api_key="EMPTY",
+            base_url="http://127.0.0.1:38080/v1",
+            model="gpt-4o-mini",
+            language="English",
+            retries=3,
+            max_workers=50,
     ):
         """
         Calculates and returns QFS (query-focused summarization) evaluation metrics
@@ -237,7 +242,7 @@ class Evaluate:
                 )
             ]
             for future in tqdm(
-                as_completed(futures), total=len(futures), desc="Evaluating: "
+                    as_completed(futures), total=len(futures), desc="Evaluating: "
             ):
                 metrics = future.result()
                 if metrics is not None:

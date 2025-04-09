@@ -3,8 +3,7 @@ from typing import List
 
 from kag.common.llm.llm_response_parser import parse_json
 from kag.interface import PromptABC
-from kag.solver.executor.retriever.local_knowledge_base.kag_retriever.kag_atomic_executor import AtomRetrievalInfo
-
+from kag.interface.solver.model.one_hop_graph import AtomRetrievalInfo
 
 @PromptABC.register("atomic_question_selection_prompt")
 class AtomicQuestionSelectionPrompt(PromptABC):
@@ -13,9 +12,9 @@ class AtomicQuestionSelectionPrompt(PromptABC):
         Your task is to analyse the providing context then decide which sub-questions may be useful to be answered before you can answer the given question. Select a most relevant sub-question from the given question list, avoid selecting sub-question that can already be answered with the given context or with your own knowledge.
         
         # Output Format
-        Please output in following JSON format:
+        Please output in following standard JSON format:
         {{
-            "thinking": <A string. Your thinking for this selection task.>,
+            "thinking": <A escaped string. Your thinking for this selection task.>,
             "question_idx": <An integer, indicating a sub-question index from 1 to {num_atoms}.>
         }}
         

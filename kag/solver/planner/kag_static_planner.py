@@ -70,7 +70,7 @@ class KAGStaticPlanner(PlannerABC):
         pattern = r"\{\{\d+\.output\}\}"
         return bool(re.search(pattern, str(query)))
 
-    async def query_rewrite(self, task: Task, **kwargs):
+    def query_rewrite(self, task: Task, **kwargs):
         """Performs asynchronous query rewriting using LLM and context.
 
         Args:
@@ -82,7 +82,7 @@ class KAGStaticPlanner(PlannerABC):
         query = task.arguments
         # print(f"Old query: {query}")
         context = self.format_context(task)
-        new_query = await self.llm.ainvoke(
+        new_query = self.llm.invoke(
             {
                 "input": query,
                 "context": context,
@@ -109,6 +109,9 @@ class KAGStaticPlanner(PlannerABC):
             List[Task]: Generated task sequence
         """
         num_iteration = kwargs.get("num_iteration", 0)
+
+        # todo
+        # 从context 中取出前几轮信息用于规划
 
         return self.llm.invoke(
             {
