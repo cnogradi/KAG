@@ -457,6 +457,8 @@ class MarkDownReader(ReaderABC):
                     while prev_element:
                         if prev_element.name in ["h1", "h2", "h3", "h4", "h5", "h6"]:
                             break
+                        if prev_element.name in ["table"]:
+                            break
                         if prev_element.name == "p":
                             prev_texts.insert(0, process_text_with_links(prev_element))
                         prev_element = prev_element.find_previous_sibling()
@@ -469,6 +471,8 @@ class MarkDownReader(ReaderABC):
                     next_element = element.find_next_sibling()
                     while next_element:
                         if next_element.name in ["h1", "h2", "h3", "h4", "h5", "h6"]:
+                            break
+                        if next_element.name in ["table"]:
                             break
                         if next_element.name == "p":
                             next_texts.append(process_text_with_links(next_element))
