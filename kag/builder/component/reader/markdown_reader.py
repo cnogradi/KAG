@@ -13,6 +13,7 @@
 import os
 import io
 
+from kag.interface.builder.base import BuilderComponentData
 import markdown
 from bs4 import BeautifulSoup, Tag
 
@@ -844,6 +845,10 @@ class MarkDownReader(ReaderABC):
                     content = input[0].content
                     basename = input[0].name
                     id = input[0].id
+                elif isinstance(input[0], BuilderComponentData):
+                    content = input[0].data.content
+                    basename = input[0].data.name
+                    id = input[0].data.hash_key
                 else:
                     raise TypeError(
                         f"Expected file path or Chunk, got {type(input[0]).__name__}"
