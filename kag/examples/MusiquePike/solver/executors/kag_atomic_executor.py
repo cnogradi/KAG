@@ -1,6 +1,4 @@
-import json
 import logging
-import uuid
 
 from typing import List, Any
 
@@ -8,11 +6,10 @@ from kag.common.conf import KAG_PROJECT_CONF
 from kag.common.config import get_default_chat_llm_config
 from kag.common.graphstore.neo4j_graph_store import Neo4jClient
 from kag.common.utils import generate_hash_id
-from kag.interface import ExecutorABC, ExecutorResponse, LLMClient, Context, VectorizeModelABC, PromptABC, Task
+from kag.interface import ExecutorABC, LLMClient, Context, VectorizeModelABC, PromptABC, Task
 from kag.interface.solver.model.one_hop_graph import (
     ChunkData,
-    RetrievedData,
-    KgGraph, AtomRetrievalInfo,
+    AtomRetrievalInfo,
 )
 from kag.solver.executor.retriever.local_knowledge_base.kag_retriever.kag_hybrid_executor import KAGRetrievedResponse
 from kag.solver.utils import init_prompt_with_fallback

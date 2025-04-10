@@ -18,7 +18,7 @@ from kag.interface import (
     PlannerABC,
     ExecutorABC,
     GeneratorABC,
-    Context,
+    Context, LLMClient,
 )
 
 logger = logging.getLogger(__name__)
@@ -41,8 +41,10 @@ class KAGStaticPipeline(SolverPipelineABC):
         executors: List[ExecutorABC],
         generator: GeneratorABC,
         max_iteration: int = 1,
+        llm_client: LLMClient = None,
     ):
         super().__init__()
+        self.llm_client = llm_client
         self.planner = planner
         self.executors = executors
         self.generator = generator
@@ -95,13 +97,47 @@ class KAGStaticPipeline(SolverPipelineABC):
         """
         if self.planner.check_require_rewrite(task):
             task.update_memory("origin_arguments", task.arguments)
-            task.arguments = self.planner.query_rewrite(task, **kwargs)
+            task.arguments = await self.planner.query_rewrite(task, **kwargs)
 
         executor = self.select_executor(task.executor)
         if executor:
             await executor.ainvoke(query, task, context, **kwargs)
         else:
             logger.warn(f"Executor not  found for task {task}")
+
+    # def finish_judger(self, question, prediction):
+    #     finish_prompt = f"""
+    #     # Task
+    #     Providing a question and its prediction: your task is to analyze whether the prediction is a specific and clear answer to the question.
+    #     # Question
+    #     {question}
+    #     # Prediction
+    #     {prediction}
+    #
+    #     Your output should be "yes" or "no".
+    #     """
+    #
+    #     response = self.llm_client.__call__(prompt=finish_prompt)
+    #     if response.strip().lower() == "no":
+    #         return "no"
+    #     return "yes"
+
+    def finish_judger(self, question, prediction):
+        finish_prompt = f"""
+        # Task
+        Providing a question and its prediction: your task is to analyze whether the qa process has completed.
+        # Question
+        {question}
+        # Prediction
+        {prediction}
+        
+        Is the prediction indicates insufficient information or not? You output should only be "Yes" or "No".
+        """
+
+        response = self.llm_client.__call__(prompt=finish_prompt)
+        if response.strip().lower() == "yes":
+            return "no"
+        return "yes"
 
     async def ainvoke(self, query, **kwargs):
         """Orchestrates full problem-solving workflow asynchronously.
@@ -149,7 +185,7 @@ class KAGStaticPipeline(SolverPipelineABC):
                 )
 
             # if 'reference' not in answer:
-            if task:
+            if self.finish_judger(query, answer) == "yes":
                 break
 
         if answer is None:

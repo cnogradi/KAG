@@ -77,8 +77,13 @@ kag_atomic_executor: &kag_atomic_executor
   atomic_question_selection_prompt:
     type: atomic_question_selection_prompt
 
+py_code_based_math_executor: &py_code_based_math_executor
+  type: py_code_based_math_executor
+  llm: *chat_llm
+
 kag_solver_pipeline:
   type: kag_static_pipeline
+  llm_client: *chat_llm
   max_iteration: 4
   planner:
     type: kag_static_planner
