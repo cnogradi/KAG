@@ -42,7 +42,7 @@ if __name__ == "__main__":
     import_modules_from_path("./executors")
     delay_run(hours=0)
     # 解析命令行参数
-    
+
     parser = running_paras()
     args = parser.parse_args()
     qa_file_path = os.path.join(os.path.abspath(os.path.dirname(__file__)), f"{args.qa_file}")
