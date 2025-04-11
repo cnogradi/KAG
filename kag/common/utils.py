@@ -246,6 +246,10 @@ def generate_hash_id(value):
     else:
         key = str(value)  # Ensure key is a string regardless of input type
 
+    # Add current timestamp to the key
+    timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
+    key += timestamp
+
     # Encode to bytes for hashing
     key = key.encode("utf-8")
 
@@ -303,18 +307,28 @@ class RateLimiterManger:
         return self.limiter_map[name]
 
 
-def get_now(language='zh'):
-    if language == 'zh':
-        days_of_week = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+def get_now(language="zh"):
+    if language == "zh":
+        days_of_week = ["周一", "周二", "周三", "周四", "周五", "周六", "周日"]
         date_format = "%Y年%m月%d日"
-    elif language == 'en':
-        days_of_week = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+    elif language == "en":
+        days_of_week = [
+            "Monday",
+            "Tuesday",
+            "Wednesday",
+            "Thursday",
+            "Friday",
+            "Saturday",
+            "Sunday",
+        ]
         date_format = "%Y-%m-%d"
     else:
-        raise ValueError("Unsupported language. Please use 'zh' for Chinese or 'en' for English.")
+        raise ValueError(
+            "Unsupported language. Please use 'zh' for Chinese or 'en' for English."
+        )
 
     today = datetime.datetime.now()
-    return today.strftime(date_format) + ' (' + days_of_week[today.weekday()] + ')'
+    return today.strftime(date_format) + " (" + days_of_week[today.weekday()] + ")"
 
 
 def generate_random_string(bit=8):
@@ -328,17 +342,17 @@ def generate_biz_id_with_type(biz_id, type_name):
 
 
 def get_p_clean(p):
-    if re.search(".*[\\u4e00-\\u9fa5]+.*", p):
-        p = re.sub("[ \t:：（）“”‘’'\"\[\]\(\)]+?", "", p)
+    if re.search(".*[\u4e00-\u9fa5]+.*", p):
+        p = re.sub(r'[ \t:：（）()\'"“”‘’\[\]]+?', "", p)
     else:
         p = None
     return p
 
 
 def get_recall_node_label(label_set):
-    for l in label_set:
-        if l != "Entity":
-            return l
+    for lable in label_set:
+        if lable != "Entity":
+            return lable
 
 
 def node_2_doc(node: dict):
@@ -394,6 +408,7 @@ def extract_content_target(input_string):
     else:
         target = None
     return content, target
+
 
 def generate_unique_message_key(message):
     unique_id = uuid.uuid5(uuid.NAMESPACE_URL, str(message))
