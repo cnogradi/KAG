@@ -246,10 +246,6 @@ def generate_hash_id(value):
     else:
         key = str(value)  # Ensure key is a string regardless of input type
 
-    # Add current timestamp to the key
-    timestamp = datetime.datetime.now(datetime.timezone.utc).isoformat()
-    key += timestamp
-
     # Encode to bytes for hashing
     key = key.encode("utf-8")
 

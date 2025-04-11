@@ -861,6 +861,14 @@ class MarkDownReader(ReaderABC):
             raise TypeError(f"Expected file path or Chunk, got {type(input).__name__}")
 
         chunks, subgraph = self.solve_content(id, basename, content)
+        # Deduplicate chunks with the same id
+        unique_chunks = {}
+        for chunk in chunks:
+            if chunk.id not in unique_chunks:
+                unique_chunks[chunk.id] = chunk
+
+        # Replace the original chunks list with deduplicated chunks
+        chunks = list(unique_chunks.values())
         length_500_list = []
         length_1000_list = []
         length_5000_list = []
@@ -875,6 +883,7 @@ class MarkDownReader(ReaderABC):
                     length_500_list.append(chunk)
                 elif len(chunk.content) <= 500:
                     length_smal_list.append(chunk)
+
         return chunks, subgraph
 
 
