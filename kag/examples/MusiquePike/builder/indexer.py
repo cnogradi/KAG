@@ -28,6 +28,6 @@ def run_pipeline(file_path):
 
 if __name__ == "__main__":
     import_modules_from_path(".")
-    file_path = "./data/train_corpus.json"
+    file_path = "./data/corpus.json"
 
     run_pipeline(file_path)
