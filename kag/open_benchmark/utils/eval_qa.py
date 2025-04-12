@@ -103,7 +103,7 @@ class EvalQa:
 
         tasks = [
             asyncio.create_task(bounded_process_sample((sample_idx, sample, ckpt)))
-            for sample_idx, sample in enumerate(qa_list[:upper_limit])
+            for sample_idx, sample in enumerate(qa_list[upper_limit:])
         ]
         metrics_list = []
         for task in tqdm(
