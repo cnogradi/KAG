@@ -23,14 +23,9 @@ from knext.graph import (
     EdgeTypeName,
 )
 from knext.graph.rest.models.batch_query_vertex_request import BatchQueryVertexRequest
-from knext.graph.rest.models.batch_query_vertex_response import BatchQueryVertexResponse
-from knext.graph.rest.models.edge_match_rule import EdgeMatchRule
 from knext.graph.rest.models.hop_match_rule import HopMatchRule
 from knext.graph.rest.models.page_rule import PageRule
 from knext.graph.rest.models.path_match_request import PathMatchRequest
-from knext.graph.rest.models.path_match_response import PathMatchResponse
-from knext.graph.rest.models.path_match_response_paths import PathMatchResponsePaths
-from knext.graph.rest.models.property_filter import PropertyFilter
 from knext.graph.rest.models.sort_rule import SortRule
 from knext.graph.rest.models.vertex_match_rule import VertexMatchRule
 
@@ -129,6 +124,42 @@ class GraphClient(Client):
             page_rule=page_rule,
         )
         return self._rest_client.graph_match_path_post(path_match_request=request)
+
+    def run_page_rank(
+        self,
+        target_vertex_type,
+        start_nodes: List[Dict],
+        max_iterations=20,
+        damping_factor=0.85,
+        parallel=None,
+        directed=None,
+        tolerance=None,
+        top_k=None,
+        reset: List[float] = None,
+        params: dict = None
+    ):
+        ppr_start_nodes = [
+            GetPageRankScoresRequestStartNodes(id=node["id"], type=node["type"])
+            for node in start_nodes
+        ]
+        req = GetPageRankScoresRequest(
+            project_id=self._project_id,
+            target_vertex_type=target_vertex_type,
+            start_nodes=ppr_start_nodes,
+            max_iterations=max_iterations,
+            parallel=parallel,
+            damping_factor=damping_factor,
+            directed=directed,
+            tolerance=tolerance,
+            top_k=top_k,
+            reset=reset,
+            params=params
+        )
+        resp = self._rest_client.graph_get_page_rank_scores_post(
+            get_page_rank_scores_request=req
+        )
+        return resp
+
 
 if __name__ == "__main__":
     sc = GraphClient("http://127.0.0.1:8887", 4)

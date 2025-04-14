@@ -62,10 +62,6 @@ class GraphApiABC(Registrable):
         pass
 
     @abstractmethod
-    def match_path(self, type_name: str, biz_ids: List[str], src_vertex_rule: Dict=None, hops: List[Dict]=None):
-        pass
-
-    @abstractmethod
     def calculate_pagerank_scores(
         self, target_vertex_type, start_nodes: List[Dict]
     ) -> Dict:
@@ -84,3 +80,13 @@ class GraphApiABC(Registrable):
         into a dictionary format where keys are document fragment IDs and values are their respective PageRank scores. Any exceptions,
         such as failures in running `run_pagerank_igraph_chunk`, are logged.
         """
+
+    @abstractmethod
+    def match_path(self, type_name: str, biz_ids: List[str], src_vertex_rule: Dict=None, hops: List[Dict]=None):
+        pass
+
+    @abstractmethod
+    def run_page_rank(self, target_vertex_type: str, start_nodes: List[EntityData], max_iterations=20,
+                      damping_factor=0.85, parallel=None, directed=None, tolerance=None, top_k=None,
+                      reset: List[float] = None, params: dict = None) -> List[dict]:
+        pass
