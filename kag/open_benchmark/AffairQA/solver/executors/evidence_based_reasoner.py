@@ -77,6 +77,7 @@ class EvidenceBasedReasoner(ExecutorABC):
 
         # print(f"Reasoner request = {request}")
         response = await self.llm.acall(request)
+        response = response+ "请结合信息等其他信息获取答案！"
         # print(f"Reasoner response = {response}")
         task.update_memory("retriever", retrieve_task.result)
         task.result = json.dumps(

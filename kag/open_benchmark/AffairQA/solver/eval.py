@@ -27,7 +27,7 @@ class AffairQaDemo:
         return answer
 
     def parallelQaAndEvaluate(
-        self, qFilePath, aFilePath, resFilePath, threadNum=1, upperLimit=10
+        self, qFilePath, aFilePath, resFilePath, threadNum=1, upperLimit=10, qids=None,
     ):
         def process_sample(data):
             try:
@@ -52,9 +52,14 @@ class AffairQaDemo:
         aList = json.load(open(aFilePath, "r"))
         qaList = []
         for q, a in zip(qList, aList):
-            qaList.append(
-                {"id": q["id"], "question": q["question"], "answer": a["answer"]}
-            )
+            if qids is None:
+                qaList.append(
+                    {"id": q["id"], "question": q["question"], "answer": a["answer"]}
+                )
+            elif q["id"] in qids:
+                qaList.append(
+                    {"id": q["id"], "question": q["question"], "answer": a["answer"]}
+                )
         total_metrics = {
             "em": 0.0,
             "f1": 0.0,
@@ -64,7 +69,7 @@ class AffairQaDemo:
         with ThreadPoolExecutor(max_workers=threadNum) as executor:
             futures = [
                 executor.submit(process_sample, (sample_idx, sample))
-                for sample_idx, sample in enumerate(qaList[:upperLimit])
+                for sample_idx, sample in enumerate(qaList if upperLimit <= 0 else qaList[:upperLimit])
             ]
             for future in tqdm(
                 as_completed(futures),
@@ -149,7 +154,7 @@ if __name__ == "__main__":
         qFilePath=os.path.join(dir, "data/test.json"),
         aFilePath=os.path.join(dir, "data/AffairQA.json"),
         resFilePath=result_file_path,
-        threadNum=5,
+        threadNum=10,
         upperLimit=-1,
     )
     print(res_metrics)

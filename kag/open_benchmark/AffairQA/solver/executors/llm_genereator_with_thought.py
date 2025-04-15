@@ -89,6 +89,7 @@ class LLMGeneratorWithThought(GeneratorABC):
 3. 请注意词性的差异，例如"日本"和"日本的"，并根据问题的要求提供准确的格式。
 4  不要在意里面是否有暗示你答案存不存在，你需要根据所有的文本自己判断，不要听它告诉你是否有答案。
 5. 如果您认为提供的文档无法回答该问题，请回答"答案: UNKNOWN"。
+6. 尽量以Docs中的内容为准
 """
 
         prompt = f"{system_instruction}\n\nDocs:\n{refer_data}\nStep by Step Analysis:\n{thoughts}Question: {query}"
@@ -103,7 +104,18 @@ class LLMGeneratorWithThought(GeneratorABC):
                 f.write(prompt)
             raise e
 
-        if "Answer: " not in response:
+        if "答案: " not in response and "答案:" not in response and "answer: " not in response and "answer:" not in response:
             raise ValueError(f"no answer found in response: {response}")
-        answer = response.split("Answer:")[1].strip()
+        # Extract answer from response, handling different possible formats
+        if "答案: " in response:
+            answer = response.split("答案: ")[1].strip()
+        elif "答案:" in response:
+            answer = response.split("答案:")[1].strip()
+        elif "answer: " in response:
+            answer = response.split("answer: ")[1].strip()
+        elif "answer:" in response:
+            answer = response.split("answer:")[1].strip()
+        else:
+            # This should not happen due to the check above, but just in case
+            answer = response.strip()
         return answer
