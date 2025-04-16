@@ -13,7 +13,13 @@ from kag.solver.pipeline.naive_rag_pipeline import NaiveRAGPipeline
 from kag.solver.pipeline.naive_generation_pipeline import NaiveGenerationPipeline
 from kag.solver.planner.kag_iterative_planner import KAGIterativePlanner
 from kag.solver.planner.kag_static_planner import KAGStaticPlanner
-from kag.solver.prompt import DeduceChoice, DeduceEntail, DeduceExtractor, DeduceJudge, DeduceMutiChoice
+from kag.solver.prompt import (
+    DeduceChoice,
+    DeduceEntail,
+    DeduceExtractor,
+    DeduceJudge,
+    DeduceMutiChoice,
+)
 from kag.solver.prompt.output_question import OutputQuestionPrompt
 
 from kag.solver.prompt.reference_generator import ReferGeneratorPrompt
@@ -25,7 +31,6 @@ from kag.solver.prompt.query_rewrite_prompt import QueryRewritePrompt
 
 
 from kag.solver.executor.math.py_based_math_executor import PyBasedMathExecutor
-from kag.solver.executor.mcp.mcp_executor import McpExecutor
 from kag.solver.executor.finish_executor import FinishExecutor
 from kag.solver.executor.mock_executors import (
     MockRetrieverExecutor,
