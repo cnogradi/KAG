@@ -26,7 +26,7 @@ type_tools = [{
 
 @PlannerABC.register("kag_prqa_planner")
 class PrqaPlanner(PlannerABC):
-    """mcp planner that generates task plans using LLM with query rewriting capability.
+    """PRQA planner that generates question type using LLM with query capability.
 
     Args:
         llm (LLMClient): Language model client for plan generation
@@ -37,7 +37,7 @@ class PrqaPlanner(PlannerABC):
         self.llm = llm
 
     def analyze_question(self, question: str) -> str:
-        """问题分类"""
+        """question classification"""
         new_message = {
             "role": "user",
             "content": str(question)
