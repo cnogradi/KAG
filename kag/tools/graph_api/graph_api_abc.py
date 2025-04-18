@@ -9,6 +9,9 @@ from kag.interface.solver.model.one_hop_graph import (
 )
 from kag.tools.graph_api.model.table_model import TableData
 
+from dep.KAG.knext.graph.rest.models.hop_match_rule import HopMatchRule
+from dep.KAG.knext.graph.rest.models.vertex_match_rule import VertexMatchRule
+
 
 def replace_qota(s: str):
     return s.replace('"', '\\"')
@@ -82,7 +85,8 @@ class GraphApiABC(Registrable):
         """
 
     @abstractmethod
-    def match_path(self, type_name: str, biz_ids: List[str], src_vertex_rule: Dict=None, hops: List[Dict]=None):
+    def match_path(self, type_name: str, biz_ids: List[str], src_vertex_rule: VertexMatchRule = None,
+                   hops: List[HopMatchRule] = None):
         pass
 
     @abstractmethod
