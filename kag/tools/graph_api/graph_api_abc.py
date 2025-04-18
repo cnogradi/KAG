@@ -8,9 +8,7 @@ from kag.interface.solver.model.one_hop_graph import (
     OneHopGraphData,
 )
 from kag.tools.graph_api.model.table_model import TableData
-
-from dep.KAG.knext.graph.rest.models.hop_match_rule import HopMatchRule
-from dep.KAG.knext.graph.rest.models.vertex_match_rule import VertexMatchRule
+from knext.graph import HopMatchRule, VertexMatchRule
 
 
 def replace_qota(s: str):
