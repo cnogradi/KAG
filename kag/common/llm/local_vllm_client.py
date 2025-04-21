@@ -90,12 +90,11 @@ class LocalVLLMClient(LLMClient):
         with LocalVLLMClient._LOCK:
             if self.model_path in LOCAL_MODEL_MAP:
                 logger.info("Found existing model, reuse.")
-                model, tokenizer = LOCAL_MODEL_MAP[self.model_path]
+                model = LOCAL_MODEL_MAP[self.model_path]
             else:
-                model, tokenizer = self._load_model(self.model_path)
-                LOCAL_MODEL_MAP[self.model_path] = (model, tokenizer)
+                model = self._load_model(self.model_path)
+                LOCAL_MODEL_MAP[self.model_path] = model
             self.model = model
-            self.tokenizer = tokenizer
 
     def _load_model(self, model_path: str):
         from vllm import LLM
@@ -105,7 +104,8 @@ class LocalVLLMClient(LLMClient):
         llm_init_params = copy.deepcopy(self.llm_init_params)
         llm_init_params["model"] = model_path
 
-        self.llm = LLM(**llm_init_params)
+        llm = LLM(**llm_init_params)
+        return llm
 
     def __call__(
         self, prompt: Union[str, List[str], List[Dict], List[List[Dict]]], **kwargs

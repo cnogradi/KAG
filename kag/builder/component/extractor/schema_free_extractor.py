@@ -55,6 +55,7 @@ class SchemaFreeExtractor(ExtractorABC):
         std_prompt: PromptABC = None,
         triple_prompt: PromptABC = None,
         external_graph: ExternalGraphLoaderABC = None,
+        **kwargs,
     ):
         """
         Initializes the KAGExtractor with the specified parameters.
@@ -66,7 +67,7 @@ class SchemaFreeExtractor(ExtractorABC):
             triple_prompt (PromptABC, optional): The prompt for triple extraction. Defaults to None.
             external_graph (ExternalGraphLoaderABC, optional): The external graph loader. Defaults to None.
         """
-        super().__init__()
+        super().__init__(**kwargs)
         self.llm = llm
         self.schema = SchemaClient(
             host_addr=KAG_PROJECT_CONF.host_addr, project_id=KAG_PROJECT_CONF.project_id

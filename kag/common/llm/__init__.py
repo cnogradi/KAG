@@ -11,12 +11,14 @@
 # or implied.
 
 
+from kag.common.llm.local_vllm_client import LocalVLLMClient
 from kag.common.llm.openai_client import OpenAIClient
 from kag.common.llm.ollama_client import OllamaClient
 from kag.common.llm.llm_config_checker import LLMConfigChecker
 from kag.common.llm.mock_llm import MockLLMClient
 
 __all__ = [
+    "LocalVLLMClient",
     "OpenAIClient",
     "OllamaClient",
     "MockLLMClient",
