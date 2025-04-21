@@ -25,7 +25,7 @@ async def buildKB(file_path):
     runner = BuilderChainRunner.from_config(
         KAG_CONFIG.all_config["kag_builder_pipeline"]
     )
-    await runner.ainvoke(file_path)
+    await runner.ainvoke(file_path, batch_size=2)
 
     logger.info(f"\n\nbuildKB successfully for {file_path}\n\n")
 

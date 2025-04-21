@@ -9,7 +9,7 @@ def get_openai_config():
     return {
         "type": "openai",
         "base_url": "https://api.siliconflow.cn/v1/",
-        "api_key": "sk-",
+        "api_key": "sk-yndixxjfxvnsqfkvfuyubkxidhtwicjcflprvqguffrmxbrv",
         "model": "Qwen/Qwen2.5-7B-Instruct",
         "stream": False,
     }
@@ -25,7 +25,6 @@ def get_ollama_config():
 
 # @pytest.mark.skip(reason="Missing API key")
 def test_llm_client():
-
     print("stream = False")
     for conf in [get_openai_config(), get_ollama_config()]:
         client = LLMClient.from_config(conf)
@@ -40,7 +39,6 @@ def test_llm_client():
 
 
 async def call_llm_client_async():
-
     print("stream = False")
     tasks = []
     for conf in [get_openai_config(), get_ollama_config()]:

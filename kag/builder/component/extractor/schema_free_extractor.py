@@ -12,7 +12,7 @@
 import copy
 import logging
 import asyncio
-from typing import Dict, Type, List
+from typing import Dict, Type, List, Tuple
 
 from kag.interface import LLMClient
 from tenacity import stop_after_attempt, retry, wait_exponential
@@ -27,6 +27,7 @@ from kag.builder.prompt.utils import init_prompt_with_fallback
 from knext.schema.client import OTHER_TYPE, CHUNK_TYPE, BASIC_TYPES
 from knext.common.base.runnable import Input, Output
 from knext.schema.client import SchemaClient
+
 
 logger = logging.getLogger(__name__)
 
@@ -92,15 +93,19 @@ class SchemaFreeExtractor(ExtractorABC):
     def output_types(self) -> Type[Output]:
         return SubGraph
 
-    def _named_entity_recognition_llm(self, passage: str):
+    def _named_entity_recognition_llm(self, passages: List[str]):
         ner_result = self.llm.invoke(
-            {"input": passage}, self.ner_prompt, with_except=False
+            [{"input": passage} for passage in passages],
+            self.ner_prompt,
+            with_except=False,
         )
         return ner_result
 
-    async def _anamed_entity_recognition_llm(self, passage: str):
+    async def _anamed_entity_recognition_llm(self, passages: List[str]):
         ner_result = await self.llm.ainvoke(
-            {"input": passage}, self.ner_prompt, with_except=False
+            [{"input": passage} for passage in passages],
+            self.ner_prompt,
+            with_except=False,
         )
         return ner_result
 
@@ -142,51 +147,60 @@ class SchemaFreeExtractor(ExtractorABC):
         wait=wait_exponential(multiplier=10, max=60),
         reraise=True,
     )
-    def named_entity_recognition(self, passage: str):
+    def named_entity_recognition(self, passages: List[str]):
         """
         Performs named entity recognition on a given text passage.
         Args:
-            passage (str): The text to perform named entity recognition on.
+            passage (List[str]): The list of text to perform named entity recognition on.
         Returns:
             The result of the named entity recognition operation.
         """
-        ner_result = self._named_entity_recognition_llm(passage)
-        return self._named_entity_recognition_process(passage, ner_result)
+        ner_results = self._named_entity_recognition_llm(passages)
+        return [
+            self._named_entity_recognition_process(passage, ner_result)
+            for passage, ner_result in zip(passages, ner_results)
+        ]
 
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=10, max=60),
         reraise=True,
     )
-    async def anamed_entity_recognition(self, passage: str):
+    async def anamed_entity_recognition(self, passages: List[str]):
         """
         Performs named entity recognition on a given text passage.
         Args:
-            passage (str): The text to perform named entity recognition on.
+            passage (List[str]): The list of text to perform named entity recognition on.
         Returns:
             The result of the named entity recognition operation.
         """
-        ner_result = await self._anamed_entity_recognition_llm(passage)
-        return self._named_entity_recognition_process(passage, ner_result)
+        ner_results = await self._anamed_entity_recognition_llm(passages)
+        return [
+            self._named_entity_recognition_process(passage, ner_result)
+            for passage, ner_result in zip(passages, ner_results)
+        ]
 
     @retry(
         stop=stop_after_attempt(3),
         wait=wait_exponential(multiplier=10, max=60),
         reraise=True,
     )
-    def named_entity_standardization(self, passage: str, entities: List[Dict]):
+    def named_entity_standardization(self, inputs: List[Tuple[str, List[Dict]]]):
         """
         Standardizes named entities.
 
         Args:
-            passage (str): The input text passage.
-            entities (List[Dict]): A list of recognized named entities.
+            inputs (List[Tuple[str, List[Dict]]]): The input data list with each contains input
+                text passage and a list of recognized named entities.
 
         Returns:
-            Standardized entity information.
+            Standardized entities.
         """
         return self.llm.invoke(
-            {"input": passage, "named_entities": entities},
+            [
+                {"input": passage, "named_entities": entities}
+                for passage, entities in inputs
+            ],
             self.std_prompt,
             with_except=False,
         )
@@ -196,19 +210,23 @@ class SchemaFreeExtractor(ExtractorABC):
         wait=wait_exponential(multiplier=10, max=60),
         reraise=True,
     )
-    async def anamed_entity_standardization(self, passage: str, entities: List[Dict]):
+    async def anamed_entity_standardization(self, inputs: List[Tuple[str, List[Dict]]]):
         """
         Standardizes named entities.
 
         Args:
-            passage (str): The input text passage.
-            entities (List[Dict]): A list of recognized named entities.
+            inputs (List[Tuple[str, List[Dict]]]): The input data list with each contains input
+                text passage and a list of recognized named entities.
 
         Returns:
-            Standardized entity information.
+            Standardized entities.
         """
+
         return await self.llm.ainvoke(
-            {"input": passage, "named_entities": entities},
+            [
+                {"input": passage, "named_entities": entities}
+                for passage, entities in inputs
+            ],
             self.std_prompt,
             with_except=False,
         )
@@ -218,17 +236,21 @@ class SchemaFreeExtractor(ExtractorABC):
         wait=wait_exponential(multiplier=10, max=60),
         reraise=True,
     )
-    def triples_extraction(self, passage: str, entities: List[Dict]):
+    def triples_extraction(self, inputs: List[Tuple[str, List[Dict]]]):
         """
         Extracts triples (subject-predicate-object structures) from a given text passage based on identified entities.
         Args:
-            passage (str): The text to extract triples from.
-            entities (List[Dict]): A list of entities identified in the text.
+            inputs (List[Tuple[str, List[Dict]]]): The input data list with each contains input
+                text passage and a list of recognized named entities.
+
         Returns:
             The result of the triples extraction operation.
         """
         return self.llm.invoke(
-            {"input": passage, "entity_list": entities},
+            [
+                {"input": passage, "entity_list": entities}
+                for passage, entities in inputs
+            ],
             self.triple_prompt,
             with_except=False,
         )
@@ -238,18 +260,21 @@ class SchemaFreeExtractor(ExtractorABC):
         wait=wait_exponential(multiplier=10, max=60),
         reraise=True,
     )
-    async def atriples_extraction(self, passage: str, entities: List[Dict]):
+    async def atriples_extraction(self, inputs: List[Tuple[str, List[Dict]]]):
         """
         Extracts triples (subject-predicate-object structures) from a given text passage based on identified entities.
         Args:
-            passage (str): The text to extract triples from.
-            entities (List[Dict]): A list of entities identified in the text.
+            inputs (List[Tuple[str, List[Dict]]]): The input data list with each contains input
+                text passage and a list of recognized named entities.
+
         Returns:
             The result of the triples extraction operation.
         """
-
         return await self.llm.ainvoke(
-            {"input": passage, "entity_list": entities},
+            [
+                {"input": passage, "entity_list": entities}
+                for passage, entities in inputs
+            ],
             self.triple_prompt,
             with_except=False,
         )
@@ -506,7 +531,37 @@ class SchemaFreeExtractor(ExtractorABC):
         out.append(sub_graph)
         return out
 
-    async def _ainvoke(self, input: Input, **kwargs) -> List[Output]:
+    # async def _ainvoke(self, input: Input, **kwargs) -> List[Output]:
+    #     """
+    #     Invokes the semantic extractor to process input data.
+
+    #     Args:
+    #         input (Input): Input data containing name and content.
+    #         **kwargs: Additional keyword arguments.
+
+    #     Returns:
+    #         List[Output]: A list of processed results, containing subgraph information.
+    #     """
+    #     title = input.name
+    #     passage = title + "\n" + input.content
+    #     out = []
+    #     entities = await self.anamed_entity_recognition(passage)
+    #     sub_graph, entities = self.assemble_sub_graph_with_spg_records(entities)
+    #     filtered_entities = [
+    #         {k: v for k, v in ent.items() if k in ["name", "category"]}
+    #         for ent in entities
+    #     ]
+    #     triples, std_entities = await asyncio.gather(
+    #         self.atriples_extraction(passage, filtered_entities),
+    #         self.anamed_entity_standardization(passage, filtered_entities),
+    #     )
+
+    #     self.append_official_name(entities, std_entities)
+    #     self.assemble_sub_graph(sub_graph, input, entities, triples)
+    #     out.append(sub_graph)
+    #     return out
+
+    async def _abatch_invoke(self, input: List[Input], **kwargs) -> List[List[Output]]:
         """
         Invokes the semantic extractor to process input data.
 
@@ -517,21 +572,38 @@ class SchemaFreeExtractor(ExtractorABC):
         Returns:
             List[Output]: A list of processed results, containing subgraph information.
         """
-        title = input.name
-        passage = title + "\n" + input.content
+        batch_passages = []
         out = []
-        entities = await self.anamed_entity_recognition(passage)
-        sub_graph, entities = self.assemble_sub_graph_with_spg_records(entities)
-        filtered_entities = [
-            {k: v for k, v in ent.items() if k in ["name", "category"]}
-            for ent in entities
-        ]
-        triples, std_entities = await asyncio.gather(
-            self.atriples_extraction(passage, filtered_entities),
-            self.anamed_entity_standardization(passage, filtered_entities),
-        )
+        for item in input:
+            title = item.name
+            passage = title + "\n" + item.content
+            batch_passages.append(passage)
+        batch_entities = await self.anamed_entity_recognition(batch_passages)
+        batch_subgraphs = []
+        batch_filtered_entities = []
+        for entities in batch_entities:
+            subgraph, entities = self.assemble_sub_graph_with_spg_records(entities)
+            filtered_entities = [
+                {k: v for k, v in ent.items() if k in ["name", "category"]}
+                for ent in entities
+            ]
+            batch_subgraphs.append(subgraph)
+            batch_filtered_entities.append(filtered_entities)
 
-        self.append_official_name(entities, std_entities)
-        self.assemble_sub_graph(sub_graph, input, entities, triples)
-        out.append(sub_graph)
+        batch_triples, batch_std_entities = await asyncio.gather(
+            self.atriples_extraction(
+                list(zip(batch_passages, batch_filtered_entities))
+            ),
+            self.anamed_entity_standardization(
+                list(zip(batch_passages, batch_filtered_entities))
+            ),
+        )
+        for idx in range(len(input)):
+            subgraph = batch_subgraphs[idx]
+            entities = batch_entities[idx]
+            std_entities = batch_std_entities[idx]
+            triples = batch_triples[idx]
+            self.append_official_name(entities, std_entities)
+            self.assemble_sub_graph(subgraph, input[idx], entities, triples)
+            out.append(subgraph)
         return out

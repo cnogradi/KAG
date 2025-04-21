@@ -1,24 +1,24 @@
 openie_llm: &openie_llm
   type: maas
   base_url: https://dashscope.aliyuncs.com/compatible-mode/v1/
-  api_key: key
+  api_key: sk-b0506de6c53a4a6f9452c0fbc6665095
   model: qwen2.5-72b-instruct
 
 chat_llm: &chat_llm
   type: maas
   base_url: https://dashscope.aliyuncs.com/compatible-mode/v1/
-  api_key: key
+  api_key: sk-b0506de6c53a4a6f9452c0fbc6665095
   model: qwen2.5-72b-instruct
-  stream: True
+  stream: true
 
 ner_llm: &ner_llm
   type: maas
   base_url: https://dashscope.aliyuncs.com/compatible-mode/v1/
-  api_key: key
+  api_key: sk-b0506de6c53a4a6f9452c0fbc6665095
   model: qwen2.5-72b-instruct
 
 vectorize_model: &vectorize_model
-  api_key: key
+  api_key: sk-yndixxjfxvnsqfkvfuyubkxidhtwicjcflprvqguffrmxbrv
   base_url: https://api.siliconflow.cn/v1/
   model: BAAI/bge-m3
   type: openai
@@ -30,8 +30,8 @@ log:
 
 project:
   biz_scene: default
-  host_addr: http://127.0.0.1:8887
-  id: '2'
+  host_addr: http://118.178.240.165:8887
+  id: '1'
   language: en
   namespace: TwoWiki
 #------------project configuration end----------------#
@@ -62,10 +62,9 @@ kag_builder_pipeline:
       vectorize_model: *vectorize_model
     writer:
       type: kg_writer # kag.builder.component.writer.kg_writer.KGWriter
-  num_threads_per_chain: 1
-  num_chains: 16
   scanner:
     type: 2wiki_dataset_scanner # kag.builder.component.scanner.dataset_scanner.MusiqueCorpusScanner
+  max_concurrency: 10
 #------------kag-builder configuration end----------------#
 
 #------------kag-solver configuration start----------------#
@@ -90,7 +89,7 @@ kg_cs:
     search_api: *search_api
     recognition_threshold: 0.9
     exclude_types:
-      - "Chunk"
+      - Chunk
 
 kg_fr:
   type: kg_fr_open_spg
@@ -111,7 +110,7 @@ kg_fr:
     search_api: *search_api
     recognition_threshold: 0.8
     exclude_types:
-      - "Chunk"
+      - Chunk
 
 rc:
   type: rc_open_spg
