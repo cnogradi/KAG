@@ -44,7 +44,7 @@ class LocalVLLMClient(LLMClient):
         if not name:
             name = "local_vllm"
 
-        super().__init__(name, max_rate, time_period)
+        super().__init__(name, max_rate, time_period, **kwargs)
 
         if llm_init_params is None:
             self.llm_init_params = {
@@ -120,7 +120,8 @@ class LocalVLLMClient(LLMClient):
             func = self.model.chat
 
         # vllm.LLM.generate/chat will always return list responses
-        results = func(prompt, self.sampling_params, **kwargs)
+        with LocalVLLMClient._LOCK:
+            results = func(prompt, self.sampling_params, **kwargs)
 
         output = [x.outputs[0].text for x in results]
         if len(output) == 1:
@@ -159,9 +160,10 @@ class LocalVLLMClient(LLMClient):
                 if with_json_parse
                 else self(prompts, **kwargs)
             )
+
             results = [
-                prompt_op.parse_response(x, model=self.model, **variables)
-                for x in responses
+                prompt_op.parse_response(rsp, model=self.model, **var)
+                for rsp, var in zip(responses, variables)
             ]
             logger.debug(f"Results: {results}")
             if not list_input:
@@ -213,9 +215,10 @@ class LocalVLLMClient(LLMClient):
                     else self.acall(prompts, **kwargs)
                 )
                 results = [
-                    prompt_op.parse_response(x, model=self.model, **variables)
-                    for x in responses
+                    prompt_op.parse_response(rsp, model=self.model, **var)
+                    for rsp, var in zip(responses, variables)
                 ]
+
                 logger.debug(f"Results: {results}")
                 if not list_input:
                     return results[0]

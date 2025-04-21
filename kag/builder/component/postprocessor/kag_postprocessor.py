@@ -37,6 +37,7 @@ class KAGPostProcessor(PostProcessorABC):
         self,
         similarity_threshold: float = None,
         external_graph: ExternalGraphLoaderABC = None,
+        **kwargs,
     ):
         """
         Initializes the KAGPostProcessor instance.
@@ -45,7 +46,7 @@ class KAGPostProcessor(PostProcessorABC):
             similarity_threshold (float, optional): The similarity threshold for entity linking. Defaults to 0.9.
             external_graph (ExternalGraphLoaderABC, optional): An instance of ExternalGraphLoaderABC for external graph-based linking. Defaults to None.
         """
-        super().__init__()
+        super().__init__(**kwargs)
         self.schema = SchemaClient(
             host_addr=KAG_PROJECT_CONF.host_addr, project_id=KAG_PROJECT_CONF.project_id
         ).load()

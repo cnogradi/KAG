@@ -38,6 +38,7 @@ class SemanticSplitter(SplitterABC):
         llm: LLMClient,
         kept_char_pattern: str = None,
         split_length: int = 1000,
+        **kwargs,
     ):
         """
         Initializes the SemanticSplitter with the given LLMClient, kept character pattern, and split length.
@@ -49,7 +50,7 @@ class SemanticSplitter(SplitterABC):
             split_length (int, optional): The maximum length of each chunk after splitting. Defaults to 1000.
             **kwargs: Additional keyword arguments to be passed to the superclass.
         """
-        super().__init__()
+        super().__init__(**kwargs)
         # Chinese/ASCII characters
         if kept_char_pattern is None:
             self.kept_char_pattern = re.compile(

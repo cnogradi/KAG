@@ -28,7 +28,7 @@ class PatternSplitter(SplitterABC):
     A class for splitting text content based on specified patterns and chunking strategies.
     """
 
-    def __init__(self, pattern_dict: dict = None, chunk_cut_num: int = None):
+    def __init__(self, pattern_dict: dict = None, chunk_cut_num: int = None, **kwargs):
         """
         Initializes the PatternSplitter with the given pattern dictionary and chunk cut number.
 
@@ -42,7 +42,7 @@ class PatternSplitter(SplitterABC):
                 }
             chunk_cut_num (int, optional): The number of characters to cut chunks into. Defaults to None.
         """
-        super().__init__()
+        super().__init__(**kwargs)
         if pattern_dict is None:
             pattern_dict = {
                 "pattern": r"(\d+)\.([^0-9]+?)？([^0-9第版].*?)(?=\d+\.|$)",

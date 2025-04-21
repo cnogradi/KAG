@@ -32,7 +32,11 @@ class DictReader(ReaderABC):
     """
 
     def __init__(
-        self, id_col: str = "id", name_col: str = "name", content_col: str = "content"
+        self,
+        id_col: str = "id",
+        name_col: str = "name",
+        content_col: str = "content",
+        **kwargs,
     ):
         """
         Initializes the DictReader with the specified column names.
@@ -42,7 +46,7 @@ class DictReader(ReaderABC):
             name_col (str): The key in the input dictionary that corresponds to the chunk's name. Defaults to "name".
             content_col (str): The key in the input dictionary that corresponds to the chunk's content. Defaults to "content".
         """
-        super().__init__()
+        super().__init__(**kwargs)
         self.id_col = id_col
         self.name_col = name_col
         self.content_col = content_col

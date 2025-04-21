@@ -39,6 +39,7 @@ class LengthSplitter(BaseTableSplitter):
         split_length: int = 500,
         window_length: int = 100,
         strict_length: bool = False,
+        **kwargs,
     ):
         """
         Initializes the LengthSplitter with the specified split length and window length.
@@ -48,7 +49,7 @@ class LengthSplitter(BaseTableSplitter):
             window_length (int): The length of the overlap between chunks. Defaults to 100.
             strict_length (bool): Whether to split strictly by length without preserving sentences. Defaults to False.
         """
-        super().__init__()
+        super().__init__(**kwargs)
         self.split_length = split_length
         self.window_length = window_length
         self.strict_length = strict_length

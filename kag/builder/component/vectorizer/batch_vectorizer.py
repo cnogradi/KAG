@@ -189,7 +189,9 @@ class BatchVectorizer(VectorizerABC):
         batch_size (int): The size of the batches in which to process the nodes.
     """
 
-    def __init__(self, vectorize_model: VectorizeModelABC, batch_size: int = 32):
+    def __init__(
+        self, vectorize_model: VectorizeModelABC, batch_size: int = 32, **kwargs
+    ):
         """
         Initializes the BatchVectorizer with the specified vectorization model and batch size.
 
@@ -197,7 +199,7 @@ class BatchVectorizer(VectorizerABC):
             vectorize_model (VectorizeModelABC): The model used for generating embedding vectors.
             batch_size (int): The size of the batches in which to process the nodes. Defaults to 32.
         """
-        super().__init__()
+        super().__init__(**kwargs)
         self.project_id = KAG_PROJECT_CONF.project_id
         # self._init_graph_store()
         self.vec_meta = self._init_vec_meta()
