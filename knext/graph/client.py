@@ -22,7 +22,12 @@ from knext.graph import (
     ExpendOneHopRequest,
     EdgeTypeName,
 )
-
+from knext.graph.rest.models.batch_query_vertex_request import BatchQueryVertexRequest
+from knext.graph.rest.models.hop_match_rule import HopMatchRule
+from knext.graph.rest.models.page_rule import PageRule
+from knext.graph.rest.models.path_match_request import PathMatchRequest
+from knext.graph.rest.models.sort_rule import SortRule
+from knext.graph.rest.models.vertex_match_rule import VertexMatchRule
 
 class GraphClient(Client):
     """ """
@@ -92,6 +97,69 @@ class GraphClient(Client):
         return self._rest_client.graph_expend_one_hop_post(
             expend_one_hop_request=request
         )
+
+    def batch_query_vertex(self, type_name: str, biz_ids: List[str]):
+        request = BatchQueryVertexRequest(
+            project_id=self._project_id, type_name=type_name, biz_ids=biz_ids
+        )
+        return self._rest_client.graph_batch_query_vertex_post(
+            batch_query_vertex_request=request
+        )
+
+    def match_path(
+        self,
+        type_name: str,
+        biz_ids: List[str],
+        src_vertex_rule: VertexMatchRule = None,
+        hops: List[HopMatchRule] = None,
+        sort_rule: SortRule = None,
+        page_rule: PageRule = None,
+    ):
+        request = PathMatchRequest(
+            project_id=self._project_id,
+            type_name=type_name,
+            biz_ids=biz_ids,
+            src_vertex_rule=src_vertex_rule,
+            hops=hops,
+            sort_rule=sort_rule,
+            page_rule=page_rule,
+        )
+        return self._rest_client.graph_match_path_post(path_match_request=request)
+
+    def run_page_rank(
+        self,
+        target_vertex_type,
+        start_nodes: List[Dict],
+        max_iterations=20,
+        damping_factor=0.85,
+        parallel=None,
+        directed=None,
+        tolerance=None,
+        top_k=None,
+        reset: List[float] = None,
+        params: dict = None
+    ):
+        ppr_start_nodes = [
+            GetPageRankScoresRequestStartNodes(id=node["id"], type=node["type"])
+            for node in start_nodes
+        ]
+        req = GetPageRankScoresRequest(
+            project_id=self._project_id,
+            target_vertex_type=target_vertex_type,
+            start_nodes=ppr_start_nodes,
+            max_iterations=max_iterations,
+            parallel=parallel,
+            damping_factor=damping_factor,
+            directed=directed,
+            tolerance=tolerance,
+            top_k=top_k,
+            reset=reset,
+            params=params
+        )
+        resp = self._rest_client.graph_get_page_rank_scores_post(
+            get_page_rank_scores_request=req
+        )
+        return resp
 
 
 if __name__ == "__main__":

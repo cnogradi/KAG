@@ -25,6 +25,7 @@ from openai import NotFoundError
 @Command.register("submit_builder_job")
 class BuilderJobSubmit(Command):
     def add_to_parser(self, subparsers: argparse._SubParsersAction):
+
         parser = subparsers.add_parser(
             "builder", help="Submit distributed builder jobs to cluster"
         )

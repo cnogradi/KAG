@@ -494,7 +494,7 @@ class PDFReader(ReaderABC):
                         chunks.append(chunk)
 
             else:
-                split_words = []  # noqa
+                split_words = []
 
                 page_contents = []
 
@@ -522,7 +522,9 @@ class PDFReader(ReaderABC):
                 )
                 chunks, subgraph = self.convert_finel_content_to_chunks(final_content)
 
-            return chunks
+            return chunks, subgraph if "subgraph" in locals() else SubGraph(
+                nodes=[], edges=[]
+            )
 
         except Exception as e:
             raise RuntimeError(f"Error loading PDF file: {e}")

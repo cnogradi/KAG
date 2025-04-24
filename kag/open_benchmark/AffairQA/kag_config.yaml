@@ -1,4 +1,5 @@
 #------------project configuration start----------------#
+<<<<<<<< HEAD:kag/open_benchmark/AffairQA/kag_config.yaml
 openie_llm: &openie_llm
   type: maas
   api_key: 
@@ -24,6 +25,9 @@ vectorize_model: &vectorize_model
   type: openai
   vector_dimensions: 1024
 vectorizer: *vectorize_model
+========
+
+>>>>>>>> 0.6.2_event_lh:kag/examples/SLSExample/kag_config.yaml
 
 chain_vectorizer:
   type: batch
@@ -35,8 +39,14 @@ log:
 project:
   biz_scene: default
   host_addr: http://127.0.0.1:8887
+<<<<<<<< HEAD:kag/open_benchmark/AffairQA/kag_config.yaml
   language: zh
   namespace: AffairQA
+========
+  id: '3'
+  language: zh
+  namespace: SLSExample
+>>>>>>>> 0.6.2_event_lh:kag/examples/SLSExample/kag_config.yaml
 #------------project configuration end----------------#
 
 #------------kag-builder configuration start----------------#
@@ -69,7 +79,14 @@ kag_builder_pipeline:
   num_threads_per_chain: 1
   num_chains: 32
   scanner:
-    type: 2wiki_dataset_scanner # kag.builder.component.scanner.dataset_scanner.MusiqueCorpusScanner
+    type: sls_consumer_scanner # kag.builder.component.scanner.dataset_scanner.MusiqueCorpusScanner
+    endpoint: cn-test-ant-eu95.log.aliyuncs.com
+    logstore: odps_channel_rt
+    project: ant-q-kgwriter-eu95-offline
+    access_id: 
+    access_key: 
+    cols_name: [user, avg]
+
 #------------kag-builder configuration end----------------#
 
 
@@ -133,4 +150,13 @@ kag_solver_pipeline:
   generator:
     type: llm_generator_with_thought
     llm_client: *chat_llm
+<<<<<<<< HEAD:kag/open_benchmark/AffairQA/kag_config.yaml
+========
+    generate_prompt:
+      type: default_resp_generator # kag.solver.prompt.default.resp_generator.RespGenerator
+  reflector:
+    type: default_reflector # kag.solver.implementation.default_reflector.DefaultReflector
+    llm_client: *chat_llm
+
+>>>>>>>> 0.6.2_event_lh:kag/examples/SLSExample/kag_config.yaml
 #------------kag-solver configuration end----------------#

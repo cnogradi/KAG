@@ -340,17 +340,17 @@ def generate_biz_id_with_type(biz_id, type_name):
 
 
 def get_p_clean(p):
-    if re.search(".*[\\u4e00-\\u9fa5]+.*", p):
-        p = re.sub("[ \t:：（）“”‘’'\"\[\]\(\)]+?", "", p)
+    if re.search(".*[\u4e00-\u9fa5]+.*", p):
+        p = re.sub(r'[ \t:：（）()\'"“”‘’\[\]]+?', "", p)
     else:
         p = None
     return p
 
 
 def get_recall_node_label(label_set):
-    for l in label_set:
-        if l != "Entity":
-            return l
+    for lable in label_set:
+        if lable != "Entity":
+            return lable
 
 
 def node_2_doc(node: dict):

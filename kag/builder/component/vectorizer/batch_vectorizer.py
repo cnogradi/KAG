@@ -218,8 +218,8 @@ class BatchVectorizer(VectorizerABC):
         spg_types = schema_client.load()
         for type_name, spg_type in spg_types.items():
             for prop_name, prop in spg_type.properties.items():
-                if prop_name == "name" or prop.index_type in [
-                    # if prop.index_type in [
+                # if prop_name == "name" or prop.index_type in [
+                if prop.index_type in [
                     IndexTypeEnum.Vector,
                     IndexTypeEnum.TextAndVector,
                 ]:
@@ -257,7 +257,7 @@ class BatchVectorizer(VectorizerABC):
             node.properties.update(new_properties)
         return input_subgraph
 
-    @retry(stop=stop_after_attempt(3), reraise=True)
+    @retry(stop=stop_after_attempt(3))
     async def _agenerate_embedding_vectors(self, input_subgraph: SubGraph) -> SubGraph:
         """
         Generates embedding vectors for the nodes in the input SubGraph.

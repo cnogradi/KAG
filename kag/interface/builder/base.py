@@ -18,7 +18,6 @@ from knext.common.base.component import Component
 from knext.common.base.runnable import Input, Output
 from kag.common.registry import Registrable
 from kag.common.conf import KAG_PROJECT_CONF
-from kag.common.checkpointer import CheckPointer, CheckpointerManager
 from kag.common.sharding_info import ShardingInfo
 from kag.common.utils import generate_hash_id
 
@@ -64,16 +63,17 @@ class BuilderComponent(Component, Registrable):
         if self.ckpt_subdir:
             self.ckpt_dir = os.path.join(KAG_PROJECT_CONF.ckpt_dir, self.ckpt_subdir)
 
-            self.checkpointer: CheckPointer = CheckpointerManager.get_checkpointer(
-                {
-                    "type": "zodb",
-                    "ckpt_dir": self.ckpt_dir,
-                    "rank": rank,
-                    "world_size": world_size,
-                }
-            )
+            # self.checkpointer: CheckPointer = CheckpointerManager.get_checkpointer(
+            #     {
+            #         "type": "zodb",
+            #         "ckpt_dir": self.ckpt_dir,
+            #         "rank": rank,
+            #         "world_size": world_size,
+            #     }
+            # )
         else:
             self.checkpointer = None
+        self.checkpointer = None
 
     @property
     def type(self):

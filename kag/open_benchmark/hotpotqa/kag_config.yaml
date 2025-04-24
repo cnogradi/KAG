@@ -1,11 +1,23 @@
 #------------project configuration start----------------#
 openie_llm: &openie_llm
+<<<<<<<< HEAD:kag/open_benchmark/hotpotqa/kag_config.yaml
+========
+  api_key:
+  base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+  model: deepseek-v3
+>>>>>>>> 0.6.2_event_lh:kag/examples/NaiveRagMedQA/kag_config.yaml
   type: maas
   base_url: https://dashscope.aliyuncs.com/compatible-mode/v1/
   api_key: key
   model: qwen2.5-72b-instruct
 
 chat_llm: &chat_llm
+<<<<<<<< HEAD:kag/open_benchmark/hotpotqa/kag_config.yaml
+========
+  api_key:
+  base_url: https://dashscope.aliyuncs.com/compatible-mode/v1
+  model: deepseek-v3
+>>>>>>>> 0.6.2_event_lh:kag/examples/NaiveRagMedQA/kag_config.yaml
   type: maas
   base_url: https://dashscope.aliyuncs.com/compatible-mode/v1/
   api_key: key
@@ -19,7 +31,7 @@ ner_llm: &ner_llm
   model: qwen2.5-72b-instruct
 
 vectorize_model: &vectorize_model
-  api_key: key
+  api_key:
   base_url: https://api.siliconflow.cn/v1/
   model: BAAI/bge-m3
   type: openai
@@ -32,31 +44,44 @@ log:
 project:
   biz_scene: default
   host_addr: http://127.0.0.1:8887
+<<<<<<<< HEAD:kag/open_benchmark/hotpotqa/kag_config.yaml
   id: '3'
   language: en
   namespace: HotpotQA
+========
+  id: '2'
+  language: zh
+  namespace: NaiveRagMedQA
+>>>>>>>> 0.6.2_event_lh:kag/examples/NaiveRagMedQA/kag_config.yaml
 #------------project configuration end----------------#
+
+#------------table-extractor configuration start----------------#
+table_extractor: &table_extractor
+  type: table_extractor
+  llm: *chat_llm
+  table_context_prompt:
+    type: table_context
+    language: zh
+  table_row_col_summary_prompt:
+    type: table_row_col_summary
+    language: zh
+#------------table-extractor configuration end----------------#
 
 #------------kag-builder configuration start----------------#
 kag_builder_pipeline:
   chain:
     type: unstructured_builder_chain # kag.builder.default_chain.DefaultUnstructuredBuilderChain
     extractor:
-      type: schema_free_extractor # kag.builder.component.extractor.schema_free_extractor.SchemaFreeExtractor
-      llm: *openie_llm
-      ner_prompt:
-        type: default_ner # kag.builder.prompt.default.ner.OpenIENERPrompt
-      std_prompt:
-        type: default_std # kag.builder.prompt.default.std.OpenIEEntitystandardizationdPrompt
-      triple_prompt:
-        type: default_triple # kag.builder.prompt.default.triple.OpenIETriplePrompt
+      type: naive_rag_extractor # kag.builder.component.extractor.schema_free_extractor.SchemaFreeExtractor
+      table_extractor: *table_extractor
     reader:
-      type: dict_reader # kag.builder.component.reader.dict_reader.DictReader
+      type: md_reader # kag.builder.component.reader.dict_reader.DictReader
     post_processor:
       type: kag_post_processor # kag.builder.component.postprocessor.kag_postprocessor.KAGPostProcessor
+      similarity_threshold: 0.9
     splitter:
       type: length_splitter # kag.builder.component.splitter.length_splitter.LengthSplitter
-      split_length: 100000
+      split_length: 1000
       window_length: 0
     vectorizer:
       type: batch_vectorizer # kag.builder.component.vectorizer.batch_vectorizer.BatchVectorizer
@@ -64,9 +89,9 @@ kag_builder_pipeline:
     writer:
       type: kg_writer # kag.builder.component.writer.kg_writer.KGWriter
   num_threads_per_chain: 1
-  num_chains: 16
+  num_chains: 1
   scanner:
-    type: hotpotqa_dataset_scanner # kag.builder.component.scanner.dataset_scanner.HotpotqaCorpusScanner
+    type: file_scanner # kag.builder.component.scanner.dataset_scanner.MusiqueCorpusScanner
 #------------kag-builder configuration end----------------#
 
 #------------kag-solver configuration start----------------#
@@ -124,6 +149,7 @@ rc:
   vectorize_model: *vectorize_model
   top_k: 20
 
+<<<<<<<< HEAD:kag/open_benchmark/hotpotqa/kag_config.yaml
 kag_merger:
   type: kg_merger
   top_k: 20
@@ -168,10 +194,48 @@ kag_solver_pipeline:
     - *py_code_based_math_executor_conf
     - *kag_deduce_executor_conf
     - *kag_output_executor_conf
+========
+chunk_retriever: &chunk_retriever
+  type: naive_chunk_retriever # kag.solver.retriever.impl.default_fuzzy_kg_retriever.DefaultFuzzyKgRetriever
+  llm_client: *chat_llm
+  recall_num: 10
+  rerank_topk: 10
+
+kag_solver_pipeline:
+  memory:
+    type: default_memory # kag.solver.implementation.default_memory.DefaultMemory
+    llm_client: *chat_llm
+  max_iterations: 3
+  reasoner:
+    type: default_reasoner # kag.solver.implementation.default_reasoner.DefaultReasoner
+    llm_client: *chat_llm
+    lf_planner:
+      type: default_lf_planner # kag.solver.plan.default_lf_planner.DefaultLFPlanner
+      llm_client: *chat_llm
+      vectorize_model: *vectorize_model
+    lf_executor:
+      type: default_lf_executor # kag.solver.execute.default_lf_executor.DefaultLFExecutor
+      llm_client: *chat_llm
+      force_chunk_retriever: true
+      chunk_retriever: *chunk_retriever
+      merger:
+        type: default_lf_sub_query_res_merger # kag.solver.execute.default_sub_query_merger.DefaultLFSubQueryResMerger
+        vectorize_model: *vectorize_model
+        chunk_retriever: *chunk_retriever
+>>>>>>>> 0.6.2_event_lh:kag/examples/NaiveRagMedQA/kag_config.yaml
   generator:
     type: llm_generator
     llm_client: *chat_llm
+<<<<<<<< HEAD:kag/open_benchmark/hotpotqa/kag_config.yaml
     generated_prompt:
       type: default_multi_hop_generator
+========
+    generate_prompt:
+      type: default_resp_generator # kag.solver.prompt.default.resp_generator.RespGenerator
+  reflector:
+    type: default_reflector # kag.solver.implementation.default_reflector.DefaultReflector
+    llm_client: *chat_llm
+
+>>>>>>>> 0.6.2_event_lh:kag/examples/NaiveRagMedQA/kag_config.yaml
 #------------kag-solver configuration end----------------#
 

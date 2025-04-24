@@ -13,6 +13,7 @@
 import os
 import io
 
+from kag.interface.builder.base import BuilderComponentData
 import markdown
 from bs4 import BeautifulSoup, Tag
 
@@ -457,6 +458,8 @@ class MarkDownReader(ReaderABC):
                     while prev_element:
                         if prev_element.name in ["h1", "h2", "h3", "h4", "h5", "h6"]:
                             break
+                        if prev_element.name in ["table"]:
+                            break
                         if prev_element.name == "p":
                             prev_texts.insert(0, process_text_with_links(prev_element))
                         prev_element = prev_element.find_previous_sibling()
@@ -469,6 +472,8 @@ class MarkDownReader(ReaderABC):
                     next_element = element.find_next_sibling()
                     while next_element:
                         if next_element.name in ["h1", "h2", "h3", "h4", "h5", "h6"]:
+                            break
+                        if next_element.name in ["table"]:
                             break
                         if next_element.name == "p":
                             next_texts.append(process_text_with_links(next_element))
@@ -844,6 +849,10 @@ class MarkDownReader(ReaderABC):
                     content = input[0].content
                     basename = input[0].name
                     id = input[0].id
+                elif isinstance(input[0], BuilderComponentData):
+                    content = input[0].data.content
+                    basename = input[0].data.name
+                    id = input[0].data.hash_key
                 else:
                     raise TypeError(
                         f"Expected file path or Chunk, got {type(input[0]).__name__}"
@@ -852,6 +861,14 @@ class MarkDownReader(ReaderABC):
             raise TypeError(f"Expected file path or Chunk, got {type(input).__name__}")
 
         chunks, subgraph = self.solve_content(id, basename, content)
+        # Deduplicate chunks with the same id
+        unique_chunks = {}
+        for chunk in chunks:
+            if chunk.id not in unique_chunks:
+                unique_chunks[chunk.id] = chunk
+
+        # Replace the original chunks list with deduplicated chunks
+        chunks = list(unique_chunks.values())
         length_500_list = []
         length_1000_list = []
         length_5000_list = []
@@ -866,7 +883,8 @@ class MarkDownReader(ReaderABC):
                     length_500_list.append(chunk)
                 elif len(chunk.content) <= 500:
                     length_smal_list.append(chunk)
-        return chunks  # , subgraph
+
+        return chunks, subgraph
 
 
 @ReaderABC.register("yuque")
