@@ -148,8 +148,8 @@ class EmbeddingVectorGenerator(object):
         for node_item in node_batch:
             label, properties = node_item
             labels = [label]
-            if self._extra_labels:
-                labels.extend(self._extra_labels)
+            # if self._extra_labels:
+            #     labels.extend(self._extra_labels)
             for label in labels:
                 if label not in vector_index_meta:
                     continue
@@ -239,8 +239,8 @@ class BatchVectorizer(VectorizerABC):
         spg_types = schema_client.load()
         for type_name, spg_type in spg_types.items():
             for prop_name, prop in spg_type.properties.items():
-                # if prop_name == "name" or prop.index_type in [
-                if prop.index_type in [
+                if prop_name == "name" or prop.index_type in [
+                    # if prop.index_type in [
                     IndexTypeEnum.Vector,
                     IndexTypeEnum.TextAndVector,
                 ]:
