@@ -25,9 +25,18 @@ from kag.builder.prompt.medical.triple import (
     OpenIETriplePrompt as MedicalOpenIETriplePrompt,
 )
 
+from kag.builder.prompt.baml.ner import OpenIENERPrompt as BAMLOpenIENERPrompt
+from kag.builder.prompt.baml.std import (
+    OpenIEEntitystandardizationdPrompt as BAMLOpenIEEntitystandardizationdPrompt,
+)
+from kag.builder.prompt.baml.triple import (
+    OpenIETriplePrompt as BAMLOpenIETriplePrompt,
+)
+
 from kag.builder.prompt.analyze_table_prompt import AnalyzeTablePrompt
 from kag.builder.prompt.spg_prompt import SPGPrompt, SPGEntityPrompt, SPGEventPrompt
 from kag.builder.prompt.semantic_seg_prompt import SemanticSegPrompt
+from kag.builder.prompt.baml_semantic_seg_prompt import BAMLSemanticSegPrompt
 from kag.builder.prompt.outline_prompt import OutlinePrompt
 
 from kag.builder.prompt.table.table_context import TableContextPrompt
@@ -37,11 +46,15 @@ __all__ = [
     "DefaultOpenIENERPrompt",
     "DefaultOpenIEEntitystandardizationdPrompt",
     "DefaultOpenIETriplePrompt",
+    "BAMLOpenIENERPrompt",
+    "BAMLOpenIEEntitystandardizationdPrompt",
+    "BAMLOpenIETriplePrompt",
     "MedicalOpenIENERPrompt",
     "MedicalOpenIEEntitystandardizationdPrompt",
     "MedicalOpenIETriplePrompt",
     "AnalyzeTablePrompt",
     "OutlinePrompt",
+    "BAMLSemanticSegPrompt",
     "SemanticSegPrompt",
     "SPGPrompt",
     "SPGEntityPrompt",

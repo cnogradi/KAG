@@ -14,7 +14,7 @@ import re
 from typing import List, Type
 
 from kag.interface import SplitterABC
-from kag.builder.prompt.semantic_seg_prompt import SemanticSegPrompt
+from kag.builder.prompt.baml_semantic_seg_prompt import BAMLSemanticSegPrompt
 from kag.builder.model.chunk import Chunk
 from kag.interface import LLMClient
 from kag.common.conf import KAG_PROJECT_CONF
@@ -59,7 +59,7 @@ class SemanticSplitter(SplitterABC):
             self.kept_char_pattern = re.compile(kept_char_pattern)
         self.split_length = split_length
         self.llm = llm
-        self.semantic_seg_op = SemanticSegPrompt(KAG_PROJECT_CONF.language)
+        self.semantic_seg_op = BAMLSemanticSegPrompt(KAG_PROJECT_CONF.language)
 
     @property
     def input_types(self) -> Type[Input]:
@@ -134,7 +134,7 @@ class SemanticSplitter(SplitterABC):
                 )
                 chunks.append(chunk)
             else:
-                print("chunk over size")
+                logger.info(f'chunk over size by {len(item["content"])-chunk_size}')
                 innerChunk = Chunk(
                     id=generate_hash_id(item["content"]),
                     name=f"{org_chunk.name}#{split_name}",

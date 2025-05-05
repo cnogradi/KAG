@@ -51,6 +51,24 @@ from kag.solver.prompt.mcp_tool_call import MCPToolCallPrompt
 from kag.solver.prompt.thought_then_answer import ThoughtThenAnswerPrompt
 from kag.solver.prompt.without_reference_generator import WithOutReferGeneratorPrompt
 
+from kag.solver.prompt.baml.deduce_choice import DeduceChoice as BAMLDeduceChoice
+from kag.solver.prompt.baml.deduce_entail import DeduceEntail as BAMLDeduceEntail
+from kag.solver.prompt.baml.deduce_judge import DeduceJudge as BAMLDeduceJudge
+from kag.solver.prompt.baml.deduce_multi_choice import DeduceMutiChoice as BAMLDeduceMutiChoice
+from kag.solver.prompt.baml.logic_form_plan import LogicFormPlanPrompt as LogicFormPlanPrompt
+from kag.solver.prompt.baml.question_ner import QuestionNER as BAMLQuestionNER
+from kag.solver.prompt.baml.resp_extractor import RespExtractor as BAMLRespExtractor
+from kag.solver.prompt.baml.resp_generator import RespGenerator as BAMLRespGenerator
+from kag.solver.prompt.baml.resp_judge import RespJudge as BAMLRespJudge
+from kag.solver.prompt.baml.resp_reflector import RespReflector as BAMLRespReflector
+from kag.solver.prompt.baml.resp_verifier import RespVerifier as BAMLRespVerifier
+from kag.solver.prompt.baml.solve_question import SolveQuestion as BAMLSolveQuestion
+from kag.solver.prompt.baml.solve_question_without_docs import (
+    SolveQuestionWithOutDocs as BAMLSolveQuestionWithOutDocs
+)
+from kag.solver.prompt.baml.solve_question_without_spo import SolveQuestionWithOutSPO as BAMLSolveQuestionWithOutSPO
+from kag.solver.prompt.baml.spo_retrieval import SpoRetrieval as BAMLSpoRetrieval
+
 __all__ = [
     "DeduceChoice",
     "DeduceExtractor",
@@ -83,4 +101,19 @@ __all__ = [
     "WithOutReferGeneratorPrompt",
     "ThoughtThenAnswerPrompt",
     "MultiHopGeneratorPrompt",
+    "BAMLDeduceChoice",
+    "BAMLDeduceEntail",
+    "BAMLDeduceJudge",
+    "BAMLDeduceMutiChoice",
+    "BAMLLogicFormPlanPrompt",
+    "BAMLQuestionNER",
+    "BAMLRespExtractor",
+    "BAMLRespGenerator",
+    "BAMLRespJudge",
+    "BAMLRespReflector",
+    "BAMLRespVerifier",
+    "BAMLSolveQuestion",
+    "BAMLSolveQuestionWithOutDocs",
+    "BAMLSolveQuestionWithOutSPO",
+    "BAMLSpoRetrieval",
 ]
