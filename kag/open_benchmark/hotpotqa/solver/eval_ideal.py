@@ -53,13 +53,13 @@ class EvaForHotPotQa(EvalQa):
                 supporing_facts.append(doc)
             else:
                 non_supporting_facts.append(doc)
-        if 1:
+        if 0:
             reslist = non_supporting_facts[:10]
             reslist.extend(supporing_facts)
             random.shuffle(reslist)
         else:
             reslist = []
-            reslist.extend(non_supporting_facts[:10])
+            #reslist.extend(non_supporting_facts[:10])
             reslist.extend(supporing_facts)
         return reslist
 
