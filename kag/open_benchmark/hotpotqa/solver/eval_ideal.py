@@ -60,7 +60,7 @@ class EvaForHotPotQa(EvalQa):
         else:
             reslist = []
             reslist.extend(supporing_facts)
-            ###reslist.extend(non_supporting_facts[:10])
+            reslist.extend(non_supporting_facts[:2])
         return reslist
 
     def do_metrics_eval(
@@ -87,3 +87,4 @@ if __name__ == "__main__":
         collect_file=args.res_file,
         eval_obj=EvaForHotPotQa(),
     )
+
