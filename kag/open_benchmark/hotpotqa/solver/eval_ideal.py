@@ -53,14 +53,14 @@ class EvaForHotPotQa(EvalQa):
                 supporing_facts.append(doc)
             else:
                 non_supporting_facts.append(doc)
-        if 0:
+        if 1:
             reslist = non_supporting_facts[:10]
             reslist.extend(supporing_facts)
             random.shuffle(reslist)
         else:
             reslist = []
-            reslist.extend(non_supporting_facts[:10])
             reslist.extend(supporing_facts)
+            #reslist.extend(non_supporting_facts[:10])
         return reslist
 
     def do_metrics_eval(
