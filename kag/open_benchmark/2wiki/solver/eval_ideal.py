@@ -60,7 +60,7 @@ class EvaFor2wiki(EvalQa):
         else:
             reslist = []
             reslist.extend(supporing_facts)
-            ##reslist.extend(non_supporting_facts[:10])
+            ###reslist.extend(non_supporting_facts[:10])
         return reslist
 
     def do_metrics_eval(
