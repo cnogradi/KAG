@@ -84,7 +84,7 @@ class MemoryGraph:
 
         checkpointer = CheckpointerManager.get_checkpointer(
             {
-                "type": "zodb",
+                "type": "diskcache",
                 "ckpt_dir": self.ckpt_dir,
                 "rank": 0,
                 "world_size": 1,
@@ -210,6 +210,39 @@ class MemoryGraph:
             one_hop.out_relations.setdefault(out_relation.type, []).append(out_relation)
         return one_hop
 
+    def get_chunks_from_atomicQuery_or_KnowledgeUnit(self, biz_id, label) -> List:
+        """
+        Get one-hop graph of the specified entity.
+
+        :param biz_id: entity business id。
+        :param label: entity label
+        :return: one-hop graph of the specified entity
+        """
+        start_vertex = self._get_vertex(biz_id, label)
+        # start_entity = self._create_entity_from_vertex(start_vertex, biz_id, label)
+        one_hop_chunks = {}
+        # one_hop.s = start_entity
+        # in_edges = start_vertex.in_edges()
+        # for in_edge in in_edges:
+        #     source_entity = self._create_entity_from_vertex(in_edge.source_vertex)
+        #     in_relation = self._create_relation_from_edge(
+        #         in_edge, source_entity, start_entity
+        #     )
+        #     one_hop.in_relations.setdefault(in_relation.type, []).append(in_relation)
+        out_edges = start_vertex.out_edges()
+        for out_edge in out_edges:
+            # target_entity = self._create_entity_from_vertex(out_edge.target_vertex)
+            # target_entity = self._create_entity_from_vertex(out_edge.target_vertex)
+            source_entity = self._create_entity_from_vertex(out_edge.source_vertex)
+
+            # out_relation = self._create_relation_from_edge(
+            #     out_edge, start_entity, target_entity
+            # )
+            if self.chunk_label == source_entity.type:
+                one_hop_chunks[source_entity.biz_id] = source_entity
+
+        return list(one_hop_chunks.values())
+
     def _get_vertex(self, biz_id, label):
         try:
             vertex = self._backend_graph.vs.find(id=biz_id, label=label)
@@ -327,9 +360,87 @@ class MemoryGraph:
             query_vector = np.array(query_vector)
             if len(query_vector.shape) == 1:
                 query_vector = query_vector.reshape(1, -1)
-            return self.batch_vector_search(
+            res = self.batch_vector_search(
                 self.chunk_label, "content", query_vector, topk=topk, **kwargs
+            )
+            return res[0]
+        except:
+            import traceback
+
+            print("Failed to run DPR chunk retrieval return [], detail info:")
+            traceback.print_exc()
+            return []
+
+    def dpr_atomicQuery2chunk_retrieval(self, query_vector, topk=10, **kwargs):
+        node_label = f"{self.namespace}.AtomicQuery"
+        related_chunks = []
+        unique_chunks = {}
+        try:
+            query_vector = np.array(query_vector)
+            if len(query_vector.shape) == 1:
+                query_vector = query_vector.reshape(1, -1)
+
+            atomicQueries = self.batch_vector_search(
+                node_label, "name", query_vector, topk=topk, **kwargs
+            )
+            atomicQueries = atomicQueries[0]
+
+            for atomicQuery in atomicQueries:
+                qid = atomicQuery["node"]["id"]
+                if atomicQuery["score"] < 0.6:
+                    continue
+                # 返回  atomicQuery 背后 的 Chunks
+                related_chunks += self.get_chunks_from_atomicQuery_or_KnowledgeUnit(
+                    qid, node_label
+                )
+                for chunk in related_chunks:
+                    # print(chunk.prop.origin_prop_map  )
+                    chunk_info = chunk.prop.origin_prop_map
+                    chunk_info["score"] = atomicQuery["score"]
+                    unique_chunks[chunk.biz_id] = {
+                        "node": chunk_info,
+                        "score": atomicQuery["score"],
+                    }
+
+            return list(unique_chunks.values())
+        except:
+            import traceback
+
+            print("Failed to run DPR chunk retrieval return [], detail info:")
+            traceback.print_exc()
+            return []
+
+    def dpr_knowledgeUnit2chunk_retrieval(self, query_vector, topk=10, **kwargs):
+        node_label = f"{self.namespace}.KnowledgeUnit"
+        related_chunks = []
+        unique_chunks = {}
+        try:
+            query_vector = np.array(query_vector)
+            if len(query_vector.shape) == 1:
+                query_vector = query_vector.reshape(1, -1)
+            rst = self.batch_vector_search(
+                node_label, "name", query_vector, topk=topk, **kwargs
             )[0]
+            rst += self.batch_vector_search(
+                node_label, "desc", query_vector, topk=topk, **kwargs
+            )[0]
+            knowledgeUnit = {
+                unit["node"]["id"]: unit for unit in rst if unit["score"] > 0.6
+            }
+
+            for kid in knowledgeUnit:
+                # 返回  atomicQuery 背后 的 Chunks
+                related_chunks += self.get_chunks_from_atomicQuery_or_KnowledgeUnit(
+                    kid, node_label
+                )
+                for chunk in related_chunks:
+                    chunk_info = chunk.prop.origin_prop_map
+                    chunk_info["score"] = knowledgeUnit[kid]["score"]
+                    unique_chunks[chunk.biz_id] = {
+                        "node": chunk_info,
+                        "score": knowledgeUnit[kid]["score"],
+                    }
+            return list(unique_chunks.values())
         except:
             import traceback
 
@@ -356,7 +467,6 @@ class MemoryGraph:
                 nodes = self._backend_graph.vs.select(label=label)
             except (KeyError, ValueError):
                 return []
-        print(f"len(nodes) = {len(nodes)}")
         vector_field_name = self._get_vector_field_name(property_key)
         vectors = nodes.get_attribute_values(vector_field_name)
         filtered_nodes = []
@@ -439,7 +549,6 @@ class MemoryGraph:
             return []
         query_vector = torch.tensor(query_vector, dtype=torch.float32).to(device)
         cosine_similarity = batch_cosine_similarity(query_vector, filtered_vectors)
-
         top_data = cosine_similarity.topk(k=min(topk, len(cosine_similarity)), dim=0)
         top_indices = top_data.indices.to("cpu")
         top_values = top_data.values.to("cpu")

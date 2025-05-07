@@ -12,7 +12,6 @@
 # flake8: noqa
 
 import json
-import time
 from typing import List
 from kag.interface import (
     ExecutorABC,
@@ -20,23 +19,25 @@ from kag.interface import (
     Task,
     Context,
     VectorizeModelABC,
+    PromptABC,
 )
+from tenacity import retry, stop_after_attempt, wait_exponential
 from kag.interface.solver.model.one_hop_graph import ChunkData
 
-from kag.common.conf import KAG_PROJECT_CONF, KAG_CONFIG
+from kag.common.conf import KAG_PROJECT_CONF
 from kag.tools.algorithm_tool.ner import Ner
 
 
-@ExecutorABC.register("kag_evidence_based_reasoner")
-class KAGEvidenceBasedReasoner(ExecutorABC):
+@ExecutorABC.register("long_context_reasoner")
+class LongContextBasedReasoner(ExecutorABC):
     def __init__(
         self,
         llm: LLMClient,
         memory_graph_path: str,
         vectorize_model: VectorizeModelABC,
-        **kwargs,
+        context_select_prompt: PromptABC,
+        context_select_llm: LLMClient,
     ):
-        super().__init__(**kwargs)
         self.llm = llm
         self.memory_graph_path = memory_graph_path
         self.vectorize_model = vectorize_model
@@ -45,7 +46,9 @@ class KAGEvidenceBasedReasoner(ExecutorABC):
         self.memory_graph = MemoryGraph(
             KAG_PROJECT_CONF.namespace, memory_graph_path, vectorize_model
         )
-        self.ner = Ner(self.llm)
+
+        self.context_select_prompt = context_select_prompt
+        self.context_select_llm = context_select_llm
 
     def rrf_merge(self, ppr_chunks: List, dpr_chunks: List):
         merged = {}
@@ -72,7 +75,7 @@ class KAGEvidenceBasedReasoner(ExecutorABC):
         sorted_chunks = sorted(merged.values(), key=lambda x: -x[0])
         return sorted_chunks
 
-    def weightd_merge(self, multi_recall_chunks: List, weights: list):
+    def weightd_merge(self, ppr_chunks: List, dpr_chunks: List, alpha: float = 0.5):
         def min_max_normalize(chunks):
             if len(chunks) == 0:
                 return []
@@ -84,127 +87,45 @@ class KAGEvidenceBasedReasoner(ExecutorABC):
             min_score = min(scores)
             for chunk in chunks:
                 score = chunk["score"]
-                if max_score == min_score:
-                    score = max_score
-                else:
-                    score = (score - min_score) / (max_score - min_score)
+                score = (score - min_score) / (max_score - min_score)
                 chunk["score"] = score
 
-        merged = {}
-        for chunks, alpha in zip(multi_recall_chunks, weights):
-            min_max_normalize(chunks)
-            for chunk in chunks:
-                chunk_attr = chunk["node"]
-                if chunk_attr["id"] in merged:
-                    score = merged[chunk_attr["id"]][0]
-                    score += chunk["score"] * alpha
-                    merged[chunk_attr["id"]] = (score, chunk_attr)
-                else:
-                    score = chunk["score"] * alpha
-                    merged[chunk_attr["id"]] = (score, chunk_attr)
+        min_max_normalize(ppr_chunks)
+        min_max_normalize(dpr_chunks)
 
-        # min_max_normalize(ppr_chunks)
-        # min_max_normalize(dpr_chunks)
-        #
-        # ppr_scores = [x["score"] for x in ppr_chunks]
-        # dpr_scores = [x["score"] for x in dpr_chunks]
-        #
-        # for chunk in ppr_chunks:
-        #     chunk_attr = chunk["node"]
-        #     if chunk_attr["id"] in merged:
-        #         score = merged[chunk_attr["id"]][0]
-        #         score += chunk["score"] * alpha
-        #         merged[chunk_attr["id"]] = (score, chunk_attr)
-        #     else:
-        #         score = chunk["score"] * alpha
-        #         merged[chunk_attr["id"]] = (score, chunk_attr)
-        #
-        # for chunk in dpr_chunks:
-        #     chunk_attr = chunk["node"]
-        #     if chunk_attr["id"] in merged:
-        #         score = merged[chunk_attr["id"]][0]
-        #         score += chunk["score"] * (1 - alpha)
-        #         merged[chunk_attr["id"]] = (score, chunk_attr)
-        #     else:
-        #         score = chunk["score"] * (1 - alpha)
-        #         merged[chunk_attr["id"]] = (score, chunk_attr)
+        ppr_scores = [x["score"] for x in ppr_chunks]
+        dpr_scores = [x["score"] for x in dpr_chunks]
+        merged = {}
+        for chunk in ppr_chunks:
+            chunk_attr = chunk["node"]
+            if chunk_attr["id"] in merged:
+                score = merged[chunk_attr["id"]][0]
+                score += chunk["score"] * alpha
+                merged[chunk_attr["id"]] = (score, chunk_attr)
+            else:
+                score = chunk["score"] * alpha
+                merged[chunk_attr["id"]] = (score, chunk_attr)
+
+        for chunk in dpr_chunks:
+            chunk_attr = chunk["node"]
+            if chunk_attr["id"] in merged:
+                score = merged[chunk_attr["id"]][0]
+                score += chunk["score"] * (1 - alpha)
+                merged[chunk_attr["id"]] = (score, chunk_attr)
+            else:
+                score = chunk["score"] * (1 - alpha)
+                merged[chunk_attr["id"]] = (score, chunk_attr)
 
         sorted_chunks = sorted(merged.values(), key=lambda x: -x[0])
         return sorted_chunks
 
     def retrieve_docs(self, query: str, topk: int = 20):
-        start_time = time.time()
-        candidate_entities = self.ner.invoke(query)
-        matched_entities = []
-        query_entities = []
-        for entity in candidate_entities:
-            query_entities.append(entity.entity_name)
+        ppr_chunks = []
 
-        # 返回 query 实体向量
-        try:
-            print(f"query_entities = {query_entities}")
-            print("*" * 80)
-            query_entity_vector = self.vectorize_model.vectorize(query_entities)
+        query_vector = self.vectorize_model.vectorize(query)
+        dpr_chunks = self.memory_graph.dpr_chunk_retrieval(query_vector, topk * 20)
+        sorted_chunks = self.weightd_merge(ppr_chunks, dpr_chunks)
 
-            top_entities = self.memory_graph.batch_vector_search(
-                label="Entity",
-                property_key="name",
-                query_vector=query_entity_vector,
-                topk=1,
-            )
-            #
-            #
-            # # 查找到 实体列表
-            for top_entity in top_entities:
-                top_entity = top_entity[0]
-                score = top_entity["score"]
-                if score > 0.7:
-                    matched_entities.append(top_entity["node"])
-
-            if matched_entities:
-                ppr_chunks = self.memory_graph.ppr_chunk_retrieval(
-                    matched_entities, topk * 20
-                )
-            else:
-                ppr_chunks = []
-        except:
-            import traceback
-
-            traceback.print_exc()
-            ppr_chunks = []
-        # print(f"num ppr chunks: {len(ppr_chunks)}")
-        try:
-            # query 本身的向量
-            query_vector = self.vectorize_model.vectorize(query)
-            dpr_chunks = self.memory_graph.dpr_chunk_retrieval(query_vector, topk * 20)
-
-        except Exception as e:
-            import traceback
-
-            traceback.print_exc()
-            dpr_chunks = []
-
-        try:
-            atomicQuery_chunks = self.memory_graph.dpr_atomicQuery2chunk_retrieval(
-                query_vector, topk * 20
-            )
-            knowledgeUnit_chunks = self.memory_graph.dpr_knowledgeUnit2chunk_retrieval(
-                query_vector, topk * 20
-            )
-            one_hop_chunks = {
-                item["node"]["id"]: item
-                for item in atomicQuery_chunks + knowledgeUnit_chunks
-            }
-        except Exception as e:
-            import traceback
-
-            traceback.print_exc()
-            one_hop_chunks = {}
-
-        multi_channel_chunks = [list(one_hop_chunks.values()), dpr_chunks, ppr_chunks]
-        channel_weights = [0.4, 0.4, 0.2]
-
-        sorted_chunks = self.weightd_merge(multi_channel_chunks, channel_weights)
         output = []
         for score, chunk in sorted_chunks[:topk]:
             output.append(
@@ -215,12 +136,42 @@ class KAGEvidenceBasedReasoner(ExecutorABC):
                     score,
                 )
             )
-        print(f"{query} retrieved cost {time.time() - start_time}")
+
         return output
+
+    @retry(
+        stop=stop_after_attempt(3),
+        wait=wait_exponential(multiplier=10, max=60),
+        reraise=True,
+    )
+    async def context_select(self, query: str, sorted_chunks):
+        chunks = []
+        for idx, item in enumerate(sorted_chunks):
+            chunks.append({"idx": idx, "content": item.content})
+        variables = {"question": query, "context": chunks}
+        response = await self.context_select_llm.ainvoke(
+            variables, self.context_select_prompt
+        )
+        print(f"response = {response}")
+        selected_context = response["context"]
+        answer = response["answer"]
+        indices = []
+        if len(selected_context) > 0:
+            indices.extend(selected_context)
+        for i in range(min(3, len(sorted_chunks))):
+            if i not in indices:
+                indices.append(i)
+        return [sorted_chunks[x] for x in indices]
 
     async def ainvoke(self, query: str, task: Task, context: Context, **kwargs):
         task_query = task.arguments["query"]
         retrieved_docs = self.retrieve_docs(task_query)
+        try:
+            retrieved_docs = await self.context_select(task_query, retrieved_docs)
+        except Exception as e:
+            import traceback
+
+            traceback.print_exc()
 
         formatted_docs = []
         for doc in retrieved_docs:
@@ -295,17 +246,3 @@ Thought: The question asks about the origin of the last name Sylvester during th
                 },
             },
         }
-
-
-if __name__ == "__main__":
-    llm_client = LLMClient.from_config(KAG_CONFIG.all_config["chat_llm"])
-    vectorize_model = VectorizeModelABC.from_config(
-        KAG_CONFIG.all_config["vectorize_model"]
-    )
-    kag_reasoner = KAGEvidenceBasedReasoner(
-        llm=llm_client,
-        memory_graph_path="/gruntdata/financial_event_extraction/peilong.zpl/ant_kag/KAG/dep/KAG/kag/examples/WikiData/builder/ckpt/writer/",
-        vectorize_model=vectorize_model,
-    )
-    result = kag_reasoner.retrieve_docs("who is daughter of Lothair II", topk=5)
-    print("result:\n", result)
