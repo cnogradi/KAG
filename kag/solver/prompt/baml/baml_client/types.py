@@ -43,13 +43,27 @@ def all_succeeded(checks: Dict[CheckName, Check]) -> bool:
 class Answer(BaseModel):
     answer: str
 
+class AnswerQuestion(BaseModel):
+    answer: str
+
+class Builder(BaseModel):
+    python_code: str
+    not_known: bool
+
 class Choice(BaseModel):
     choice: str
     no_available_information: bool
 
+class Cognition(BaseModel):
+    is_cognition_question: bool
+
 class Entail(BaseModel):
     entail: str
     no_available_information: bool
+
+class Extractor(BaseModel):
+    extractor: str
+    no_relevant_information: bool
 
 class Judge(BaseModel):
     assessable: bool
@@ -58,9 +72,25 @@ class Judge(BaseModel):
 class Judgement(BaseModel):
     answer: bool
 
+class LFStaticPlan(BaseModel):
+    idea: str
+    step: str
+    action: str
+
+class LFStaticPlanning(BaseModel):
+    python_code: str
+    not_known: bool
+
+class LFStaticPlans(BaseModel):
+    plans: List["LFStaticPlan"]
+
 class Multi(BaseModel):
     option: str
     no_available_information: bool
+
+class MultiAnswer(BaseModel):
+    thought: str
+    answer: str
 
 class Passage(BaseModel):
     passage: str
@@ -79,8 +109,20 @@ class QNer(BaseModel):
 class QNers(BaseModel):
     output: List["QNer"]
 
+class RefAnswer(BaseModel):
+    answer: bool
+
 class Reflection(BaseModel):
     thought_questions: List[str]
+
+class Rewrite(BaseModel):
+    rewritten_question: bool
+
+class RewriteQuery(BaseModel):
+    rewritten_question: bool
+
+class RewrittenPrompt(BaseModel):
+    query: bool
 
 class SPOs(BaseModel):
     spos: List[str]

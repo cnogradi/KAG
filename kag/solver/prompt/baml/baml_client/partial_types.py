@@ -16,6 +16,7 @@
 import baml_py
 from enum import Enum
 from pydantic import BaseModel, ConfigDict
+from typing_extensions import TypeAlias
 from typing import Dict, Generic, List, Optional, TypeVar, Union, Literal
 
 from . import types
@@ -37,13 +38,27 @@ class StreamState(BaseModel, Generic[T]):
 class Answer(BaseModel):
     answer: Optional[str] = None
 
+class AnswerQuestion(BaseModel):
+    answer: Optional[str] = None
+
+class Builder(BaseModel):
+    python_code: Optional[str] = None
+    not_known: Optional[bool] = None
+
 class Choice(BaseModel):
     choice: Optional[str] = None
     no_available_information: Optional[bool] = None
 
+class Cognition(BaseModel):
+    is_cognition_question: Optional[bool] = None
+
 class Entail(BaseModel):
     entail: Optional[str] = None
     no_available_information: Optional[bool] = None
+
+class Extractor(BaseModel):
+    extractor: Optional[str] = None
+    no_relevant_information: Optional[bool] = None
 
 class Judge(BaseModel):
     assessable: Optional[bool] = None
@@ -52,9 +67,25 @@ class Judge(BaseModel):
 class Judgement(BaseModel):
     answer: Optional[bool] = None
 
+class LFStaticPlan(BaseModel):
+    idea: Optional[str] = None
+    step: Optional[str] = None
+    action: Optional[str] = None
+
+class LFStaticPlanning(BaseModel):
+    python_code: Optional[str] = None
+    not_known: Optional[bool] = None
+
+class LFStaticPlans(BaseModel):
+    plans: List["LFStaticPlan"]
+
 class Multi(BaseModel):
     option: Optional[str] = None
     no_available_information: Optional[bool] = None
+
+class MultiAnswer(BaseModel):
+    thought: Optional[str] = None
+    answer: Optional[str] = None
 
 class Passage(BaseModel):
     passage: Optional[str] = None
@@ -73,8 +104,20 @@ class QNer(BaseModel):
 class QNers(BaseModel):
     output: List["QNer"]
 
+class RefAnswer(BaseModel):
+    answer: Optional[bool] = None
+
 class Reflection(BaseModel):
     thought_questions: List[str]
+
+class Rewrite(BaseModel):
+    rewritten_question: Optional[bool] = None
+
+class RewriteQuery(BaseModel):
+    rewritten_question: Optional[bool] = None
+
+class RewrittenPrompt(BaseModel):
+    query: Optional[bool] = None
 
 class SPOs(BaseModel):
     spos: List[str]

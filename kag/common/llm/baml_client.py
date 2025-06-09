@@ -33,7 +33,11 @@ class BAMLClient(LLMClient):
         self,
         model: str,
         base_url: str,
+        api_key: str = "dummy",
         timeout: float = None,
+        max_rate: float = 1000,
+        time_period: float = 1,
+        **kwargs,
     ):
         """
         Initializes the OllamaClient instance.
@@ -43,6 +47,10 @@ class BAMLClient(LLMClient):
             base_url (str): The base URL for the Ollama API.
             timeout (float): The timeout duration for the service request. Defaults to None, means no timeout.
         """
+        name = kwargs.pop("name", None)
+        if not name:
+            name = f"{api_key}{base_url}{model}"
+        super().__init__(name, max_rate, time_period, **kwargs)
         self.model = model
         self.base_url = base_url
         self.timeout = timeout
