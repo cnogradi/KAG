@@ -1,0 +1,8 @@
+ckpt/
+/cs.jsonl
+/builder/data*
+/solver/data*
+/solver/csqa_qfs_res_*.json
+/solver/csqa_qfs_res_*.md
+out*
+out.*
