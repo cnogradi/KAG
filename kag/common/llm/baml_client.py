@@ -59,7 +59,7 @@ class BAMLClient(LLMClient):
         self.check()
 
 
-    def __call__(self, prompt, image=None):
+    def __call__(self, prompt: str = "", image_url: str = None, **kwargs):
         """
         Executes a model request when the object is called and returns the result.
 

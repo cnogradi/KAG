@@ -4,7 +4,7 @@ from typing import List
 from kag.interface import PromptABC
 from .baml_client.sync_client import b
 
-@PromptABC.register("default_output_question")
+@PromptABC.register("baml_output_question")
 class OutputQuestionPrompt(PromptABC):
 
     template_zh = "oq"

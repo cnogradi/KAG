@@ -56,6 +56,15 @@ class Entail(BaseModel):
     entail: Optional[str] = None
     no_available_information: Optional[bool] = None
 
+class Executor(BaseModel):
+    name: Optional[str] = None
+    arguments: List["ExecutorArgument"]
+    thought: Optional[str] = None
+
+class ExecutorArgument(BaseModel):
+    name: Optional[str] = None
+    instruction: Optional[str] = None
+
 class Extractor(BaseModel):
     extractor: Optional[str] = None
     no_relevant_information: Optional[bool] = None
@@ -104,23 +113,48 @@ class QNer(BaseModel):
 class QNers(BaseModel):
     output: List["QNer"]
 
+class QuestionSummaryAnswer(BaseModel):
+    answer: Optional[str] = None
+
 class RefAnswer(BaseModel):
-    answer: Optional[bool] = None
+    answer: Optional[str] = None
+    reference_id: Optional[str] = None
+    internal_knowledge: Optional[bool] = None
 
 class Reflection(BaseModel):
     thought_questions: List[str]
 
 class Rewrite(BaseModel):
-    rewritten_question: Optional[bool] = None
+    rewritten_question: Optional[str] = None
 
 class RewriteQuery(BaseModel):
-    rewritten_question: Optional[bool] = None
+    rewritten_question: Optional[str] = None
 
 class RewrittenPrompt(BaseModel):
     query: Optional[bool] = None
 
+class SPODecompose(BaseModel):
+    step: Optional[str] = None
+    action: Optional[str] = None
+
+class SPODecomposes(BaseModel):
+    spos: List["SPODecompose"]
+
 class SPOs(BaseModel):
     spos: List[str]
+
+class SPPArgument(BaseModel):
+    name: Optional[str] = None
+    instruction: Optional[str] = None
+
+class STask(BaseModel):
+    task_id: Optional[int] = None
+    executor: Optional[str] = None
+    dependent_task_ids: List[int]
+    args: List["SPPArgument"]
+
+class STasks(BaseModel):
+    tasks: List["STask"]
 
 class Solve(BaseModel):
     answer: Optional[str] = None
@@ -131,6 +165,16 @@ class SolveNoDocs(BaseModel):
 class SolveNoSPO(BaseModel):
     answer: Optional[str] = None
 
+class SubQuestionSummaryAnswer(BaseModel):
+    answer: Optional[str] = None
+
+class TTA(BaseModel):
+    thought: Optional[str] = None
+    answer: Optional[str] = None
+
 class Verifier(BaseModel):
     answer: Optional[str] = None
     answered: Optional[bool] = None
+
+class WRG(BaseModel):
+    answer: Optional[str] = None

@@ -23,4 +23,4 @@ class DefaultRewriteSubTaskQueryPrompt(PromptABC):
     def parse_response(self, response: list, **kwargs):
         response = b.RewriteSubTaskQuery(kwargs['content'],kwargs['input'])
         logger.debug(f"rewrite sub query:{response}")
-        return response
+        return response.rewritten_question

@@ -1,6 +1,6 @@
 // Defining a data model.
 class Rewrite {
-  rewritten_question bool @description(#"
+  rewritten_question string @description(#"
     rewriten question as complete as possible without any additional information.
   "#)
 }

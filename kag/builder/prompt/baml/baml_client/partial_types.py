@@ -16,6 +16,7 @@
 import baml_py
 from enum import Enum
 from pydantic import BaseModel, ConfigDict
+from typing_extensions import TypeAlias
 from typing import Dict, Generic, List, Optional, TypeVar, Union, Literal
 
 from . import types

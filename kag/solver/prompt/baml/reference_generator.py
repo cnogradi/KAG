@@ -9,7 +9,7 @@ from .baml_client.sync_client import b
 logger = logging.getLogger(__name__)
 
 
-@PromptABC.register("default_refer_generator_prompt")
+@PromptABC.register("baml_refer_generator_prompt")
 class ReferGeneratorPrompt(PromptABC):
     template_zh = "rg"
     template_en = "rg"
@@ -19,6 +19,6 @@ class ReferGeneratorPrompt(PromptABC):
         return ["content", "query", "ref"]
 
     def parse_response(self, response: str, **kwargs):
-        response = b.ReferenceGenerator(get_now(language='en'), kwargs['context'], kwargs['ref'], kwargs['query'])
+        response = b.ReferenceGenerator(get_now(language='en'), kwargs['content'], kwargs['ref'], kwargs['query'])
         logger.debug("refernce_generator:{}".format(response))
-        return response
+        return f'{response.answer}\n<reference id="{response.reference_id if not response.internal_knowledge else "internal knowledge"}"></reference>\n'

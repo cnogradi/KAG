@@ -1,7 +1,13 @@
 // Defining a data model.
 class RefAnswer {
-  answer bool @description(#"
+  answer string @description(#"
     Answer with potential citation 
+  "#)
+  reference_id string? @description(#"
+    Answered citation reference ID
+  "#)
+  internal_knowledge bool @description(#"
+    Answered from internal knowledge
   "#)
 }
 
@@ -15,7 +21,7 @@ function ReferenceGenerator(now: string, content: string, ref: string, query: st
     Answer the question based on the given references.
     If the answer contains referenced information, include the `id` field from the reference. If it is not a retrieved result, no citation marker is needed.
     Do not repeat the references when outputting the answer.
-    Citations should be in the format `<reference id="chunk:1_2"></reference>`, and the cited symbol must exist in the `id` field of the references; otherwise, no citation should be provided.
+    Citations should be include in the josn output uaing the format `chunk:1_2`, and the cited symbol must exist in the `id` field of the references; otherwise, no citation should be provided.
     If the question cannot be answered using the given references, use internal model knowledge to respond but clearly indicate whether the response is based on retrieved content or cited documents.
     The tone of the response should be smooth and natural, avoiding any mechanical feel, and the language of the output should match the language of the question.
   
