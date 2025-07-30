@@ -61,6 +61,15 @@ class Entail(BaseModel):
     entail: str
     no_available_information: bool
 
+class Executor(BaseModel):
+    name: str
+    arguments: List["ExecutorArgument"]
+    thought: str
+
+class ExecutorArgument(BaseModel):
+    name: str
+    instruction: str
+
 class Extractor(BaseModel):
     extractor: str
     no_relevant_information: bool
@@ -109,23 +118,48 @@ class QNer(BaseModel):
 class QNers(BaseModel):
     output: List["QNer"]
 
+class QuestionSummaryAnswer(BaseModel):
+    answer: str
+
 class RefAnswer(BaseModel):
-    answer: bool
+    answer: str
+    reference_id: Optional[str] = None
+    internal_knowledge: bool
 
 class Reflection(BaseModel):
     thought_questions: List[str]
 
 class Rewrite(BaseModel):
-    rewritten_question: bool
+    rewritten_question: str
 
 class RewriteQuery(BaseModel):
-    rewritten_question: bool
+    rewritten_question: str
 
 class RewrittenPrompt(BaseModel):
     query: bool
 
+class SPODecompose(BaseModel):
+    step: str
+    action: str
+
+class SPODecomposes(BaseModel):
+    spos: List["SPODecompose"]
+
 class SPOs(BaseModel):
     spos: List[str]
+
+class SPPArgument(BaseModel):
+    name: str
+    instruction: str
+
+class STask(BaseModel):
+    task_id: int
+    executor: str
+    dependent_task_ids: List[int]
+    args: List["SPPArgument"]
+
+class STasks(BaseModel):
+    tasks: List["STask"]
 
 class Solve(BaseModel):
     answer: str
@@ -136,6 +170,16 @@ class SolveNoDocs(BaseModel):
 class SolveNoSPO(BaseModel):
     answer: str
 
+class SubQuestionSummaryAnswer(BaseModel):
+    answer: str
+
+class TTA(BaseModel):
+    thought: str
+    answer: str
+
 class Verifier(BaseModel):
     answer: str
     answered: bool
+
+class WRG(BaseModel):
+    answer: str

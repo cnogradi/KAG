@@ -327,6 +327,31 @@ class AsyncHttpRequest:
         False,
       )
     
+    async def QuestionSummary(
+        self,
+        history: str,question: str,docs: List[str],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return await self.__runtime.build_request(
+        "QuestionSummary",
+        {
+          "history": history,
+          "question": question,
+          "docs": docs,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        False,
+      )
+    
     async def ReferenceGenerator(
         self,
         now: str,content: str,ref: str,query: str,
@@ -473,6 +498,30 @@ class AsyncHttpRequest:
         False,
       )
     
+    async def RetrieverStaticPlanning(
+        self,
+        executors: str,query: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return await self.__runtime.build_request(
+        "RetrieverStaticPlanning",
+        {
+          "executors": executors,
+          "query": query,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        False,
+      )
+    
     async def RewriteSubQuery(
         self,
         history_qa: str,question: str,
@@ -539,6 +588,29 @@ class AsyncHttpRequest:
           "question": question,
           "mention": mention,
           "candis": candis,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        False,
+      )
+    
+    async def SPORetrievalDecompose(
+        self,
+        question: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return await self.__runtime.build_request(
+        "SPORetrievalDecompose",
+        {
+          "question": question,
         },
         self.__ctx_manager.get(),
         tb,
@@ -638,6 +710,132 @@ class AsyncHttpRequest:
           "question": question,
           "history": history,
           "docs": docs,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        False,
+      )
+    
+    async def StaticPlanningPrompt(
+        self,
+        executors: str,query: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return await self.__runtime.build_request(
+        "StaticPlanningPrompt",
+        {
+          "executors": executors,
+          "query": query,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        False,
+      )
+    
+    async def SubQuestionSummary(
+        self,
+        history: str,question: str,knowledge_graph: str,docs: List[str],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return await self.__runtime.build_request(
+        "SubQuestionSummary",
+        {
+          "history": history,
+          "question": question,
+          "knowledge_graph": knowledge_graph,
+          "docs": docs,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        False,
+      )
+    
+    async def ToughtIterativePlanning(
+        self,
+        example_executors: str,query: str,context: str,executors: List[str],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return await self.__runtime.build_request(
+        "ToughtIterativePlanning",
+        {
+          "example_executors": example_executors,
+          "query": query,
+          "context": context,
+          "executors": executors,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        False,
+      )
+    
+    async def ToughtThenAnswer(
+        self,
+        cur_question: str,questions: str,docs: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return await self.__runtime.build_request(
+        "ToughtThenAnswer",
+        {
+          "cur_question": cur_question,
+          "questions": questions,
+          "docs": docs,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        False,
+      )
+    
+    async def WithoutRefGenerator(
+        self,
+        now: str,content: str,query: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return await self.__runtime.build_request(
+        "WithoutRefGenerator",
+        {
+          "now": now,
+          "content": content,
+          "query": query,
         },
         self.__ctx_manager.get(),
         tb,
@@ -946,6 +1144,31 @@ class AsyncHttpStreamRequest:
         True,
       )
     
+    async def QuestionSummary(
+        self,
+        history: str,question: str,docs: List[str],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return await self.__runtime.build_request(
+        "QuestionSummary",
+        {
+          "history": history,
+          "question": question,
+          "docs": docs,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        True,
+      )
+    
     async def ReferenceGenerator(
         self,
         now: str,content: str,ref: str,query: str,
@@ -1092,6 +1315,30 @@ class AsyncHttpStreamRequest:
         True,
       )
     
+    async def RetrieverStaticPlanning(
+        self,
+        executors: str,query: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return await self.__runtime.build_request(
+        "RetrieverStaticPlanning",
+        {
+          "executors": executors,
+          "query": query,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        True,
+      )
+    
     async def RewriteSubQuery(
         self,
         history_qa: str,question: str,
@@ -1158,6 +1405,29 @@ class AsyncHttpStreamRequest:
           "question": question,
           "mention": mention,
           "candis": candis,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        True,
+      )
+    
+    async def SPORetrievalDecompose(
+        self,
+        question: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return await self.__runtime.build_request(
+        "SPORetrievalDecompose",
+        {
+          "question": question,
         },
         self.__ctx_manager.get(),
         tb,
@@ -1257,6 +1527,132 @@ class AsyncHttpStreamRequest:
           "question": question,
           "history": history,
           "docs": docs,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        True,
+      )
+    
+    async def StaticPlanningPrompt(
+        self,
+        executors: str,query: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return await self.__runtime.build_request(
+        "StaticPlanningPrompt",
+        {
+          "executors": executors,
+          "query": query,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        True,
+      )
+    
+    async def SubQuestionSummary(
+        self,
+        history: str,question: str,knowledge_graph: str,docs: List[str],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return await self.__runtime.build_request(
+        "SubQuestionSummary",
+        {
+          "history": history,
+          "question": question,
+          "knowledge_graph": knowledge_graph,
+          "docs": docs,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        True,
+      )
+    
+    async def ToughtIterativePlanning(
+        self,
+        example_executors: str,query: str,context: str,executors: List[str],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return await self.__runtime.build_request(
+        "ToughtIterativePlanning",
+        {
+          "example_executors": example_executors,
+          "query": query,
+          "context": context,
+          "executors": executors,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        True,
+      )
+    
+    async def ToughtThenAnswer(
+        self,
+        cur_question: str,questions: str,docs: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return await self.__runtime.build_request(
+        "ToughtThenAnswer",
+        {
+          "cur_question": cur_question,
+          "questions": questions,
+          "docs": docs,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        True,
+      )
+    
+    async def WithoutRefGenerator(
+        self,
+        now: str,content: str,query: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.HTTPRequest:
+      __tb__ = baml_options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = baml_options.get("client_registry", None)
+
+      return await self.__runtime.build_request(
+        "WithoutRefGenerator",
+        {
+          "now": now,
+          "content": content,
+          "query": query,
         },
         self.__ctx_manager.get(),
         tb,

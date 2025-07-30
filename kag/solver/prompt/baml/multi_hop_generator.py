@@ -15,7 +15,7 @@ from kag.interface import PromptABC
 
 from .baml_client.sync_client import b
 
-@PromptABC.register("default_multi_hop_generator")
+@PromptABC.register("baml_multi_hop_generator")
 class MultiHopGeneratorPrompt(PromptABC):
 
     template_en = "mhg"

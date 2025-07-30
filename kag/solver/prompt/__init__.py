@@ -69,6 +69,34 @@ from kag.solver.prompt.baml.solve_question_without_docs import (
 from kag.solver.prompt.baml.solve_question_without_spo import SolveQuestionWithOutSPO as BAMLSolveQuestionWithOutSPO
 from kag.solver.prompt.baml.spo_retrieval import SpoRetrieval as BAMLSpoRetrieval
 
+from kag.solver.prompt.baml.deduce_extractor import DeduceExtractor as BAMLDeduceExtractor
+
+from kag.solver.prompt.baml.expression_builder import ExpressionBuildr as BAMLExpressionBuildr
+from kag.solver.prompt.baml.lf_static_planning_prompt import RetrieverLFStaticPlanningPrompt as BAMLRetrieverLFStaticPlanningPrompt
+
+from kag.solver.prompt.baml.multi_hop_generator import MultiHopGeneratorPrompt as BAMLMultiHopGeneratorPrompt
+
+from kag.solver.prompt.baml.rewrite_sub_query import DefaultRewriteSubQuery as BAMLDefaultRewriteSubQuery
+
+from kag.solver.prompt.baml.query_rewrite_prompt import QueryRewritePrompt as BAMLQueryRewritePrompt
+from kag.solver.prompt.baml.reference_generator import ReferGeneratorPrompt as BAMLReferGeneratorPrompt
+from kag.solver.prompt.baml.retriever_static_planning_prompt import (
+    RetrieverStaticPlanningPrompt as BAMLRetrieverStaticPlanningPrompt
+)
+from kag.solver.prompt.baml.spo_retriever_decompose_prompt import (
+    DefaultSPORetrieverDecomposePrompt as BAMLDefaultSPORetrieverDecomposePrompt
+)
+from kag.solver.prompt.baml.static_planning_prompt import DefaultStaticPlanningPrompt as BAMLDefaultStaticPlanningPrompt
+from kag.solver.prompt.baml.thought_iterative_planning_prompt import (
+    DefaultIterativePlanningPrompt as BAMLDefaultIterativePlanningPrompt
+)
+from kag.solver.prompt.baml.sub_question_summary import SubQuestionSummary as BAMLSubQuestionSummary
+from kag.solver.prompt.baml.summary_question import SummaryQuestionWithOutSPO as BAMLSummaryQuestionWithOutSPO
+from kag.solver.prompt.baml.mcp_tool_call import MCPToolCallPrompt as BAMLMCPToolCallPrompt
+from kag.solver.prompt.baml.thought_then_answer import ThoughtThenAnswerPrompt as BAMLThoughtThenAnswerPrompt
+from kag.solver.prompt.baml.without_reference_generator import WithOutReferGeneratorPrompt as BAMLWithOutReferGeneratorPrompt
+from kag.solver.prompt.baml.rewrite_sub_task_query import DefaultRewriteSubTaskQueryPrompt as BAMLRewriteSubTaskQueryPrompt
+from kag.solver.prompt.baml.output_question import OutputQuestionPrompt as BAMLOutputQuestionPrompt
 __all__ = [
     "DeduceChoice",
     "DeduceExtractor",
@@ -102,6 +130,7 @@ __all__ = [
     "ThoughtThenAnswerPrompt",
     "MultiHopGeneratorPrompt",
     "BAMLDeduceChoice",
+    "BAMLDeduceExtractor",
     "BAMLDeduceEntail",
     "BAMLDeduceJudge",
     "BAMLDeduceMutiChoice",
@@ -116,4 +145,20 @@ __all__ = [
     "BAMLSolveQuestionWithOutDocs",
     "BAMLSolveQuestionWithOutSPO",
     "BAMLSpoRetrieval",
+    "BAMLExpressionBuildr",
+    "BAMLDefaultRewriteSubQuery",
+    "BAMLQueryRewritePrompt",
+    "BAMLReferGeneratorPrompt",
+    "BAMLRetrieverStaticPlanningPrompt",
+    "BAMLDefaultSPORetrieverDecomposePrompt",
+    "BAMLDefaultStaticPlanningPrompt",
+    "BAMLDefaultIterativePlanningPrompt",
+    "BAMLSubQuestionSummary",
+    "BAMLSummaryQuestionWithOutSPO",
+    "BAMLRetrieverLFStaticPlanningPrompt",
+    "BAMLMCPToolCallPrompt",
+    "BAMLWithOutReferGeneratorPrompt",
+    "BAMLThoughtThenAnswerPrompt",
+    "BAMLMultiHopGeneratorPrompt",
+    "BAMLRewriteSubTaskQueryPrompt"
 ]

@@ -1,0 +1,71 @@
+// Defining a data model.
+class TTA {
+  thought string
+  answer string
+}
+
+// Create a function to extract the resume from a string.
+function ToughtThenAnswer(cur_question: string, questions: string, docs: string)-> TTA {
+  // Specify a client as provider/model-name
+  // you can use custom LLM params with a custom client name from clients.baml like "client CustomHaiku"
+  client "Ollama" // Set OPENAI_API_KEY to use this client.
+  prompt #"
+    As an adept specialist in resolving intricate multi-hop questions, I require your assistance in addressing a multi-hop question. The question has been segmented into multiple straightforward single-hop inquiries, wherein each question may depend on the responses to preceding questions, i.e., the question body may contain content such as "\{\{i.output\}\}", which means the answer of ith sub-question. I will furnish you with insights on how to address these preliminary questions, or the answers themselves, which are essential for accurate resolution. Furthermore, I will provide textual excerpts pertinent to the current question, which you are advised to peruse and comprehend thoroughly. Provide you reply in the form of json with 'thought', where you'll outline the step-by-step thought process that leads to your conclusion. And 'answer' where you deliver a clear and precise response without any extra commentary.
+
+    Docs:
+    Sylvester
+    Sylvester is a name derived from the Latin adjective silvestris meaning ``wooded ''or`` wild'', which derives from the noun silva meaning ``woodland ''. Classical Latin spells this with i. In Classical Latin y represented a separate sound distinct from i, not a native Latin sound but one used in transcriptions of foreign words. After the Classical period y came to be pronounced as i. Spellings with Sylv - in place of Silv - date from after the Classical period.
+
+    Stanton Township, Champaign County, Illinois
+    Stanton Township is a township in Champaign County, Illinois, USA. As of the 2010 census, its population was 505 and it contained 202 housing units.
+
+    Montebello, New York
+    Montebello (Italian: "Beautiful mountain") is an incorporated village in the town of Ramapo, Rockland County, New York, United States. It is located north of Suffern, east of Hillburn, south of Wesley Hills, and west of Airmont. The population was 4,526 at the 2010 census
+
+    Erik Hort
+    Erik Hort (born February 16, 1987 in Montebello, New York) is an American soccer player who is currently a Free Agent.
+
+    Questions:
+      Step1: Who was crowned emperor of the west in 800 CE?
+      Thought: One of the provided passage on Charlemagne indicates that he was crowned Holy Roman Emperor in 800.
+      Answer: Charlemagne.
+
+      Step2: What was Charlemagne later known as?
+      Thought: To determine what Charlemagne was later known as, I need to review the provided passage about Charlemagne. The passage indicates that Charlemagne was also known as "Charles the Great." 
+      Answer: Charles the Great
+
+      Step3: What was the language from which the last name Sylvester originated during Charles the Great era?
+      Thought: The question asks about the origin of the last name Sylvester during the time of the person Charles the Great, which was Charlemagne, whose reign was in the Early Middle Ages. The passage about the name Sylvester states that it is derived from Latin. 
+      Answer: Latin
+
+    Docs:
+    {{docs}}
+
+    Questions:
+    {{questions}}
+
+    {{cur_question}}
+
+    {{ ctx.output_format }}
+  "#
+}
+
+// Test the function with a sample resume. Open the VSCode playground to run this.
+test laibhav_resume {
+  functions [ToughtThenAnswer]
+  args {
+    resume #"
+      Vaibhav Gupta
+      vbv@boundaryml.com
+
+      Experience:
+      - Founder at BoundaryML
+      - CV Engineer at Google
+      - CV Engineer at Microsoft
+
+      Skills:
+      - Rust
+      - C++
+    "#
+  }
+}

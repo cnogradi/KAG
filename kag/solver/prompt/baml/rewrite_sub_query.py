@@ -8,7 +8,7 @@ from .baml_client.sync_client import b
 logger = logging.getLogger(__name__)
 
 
-@PromptABC.register("default_rewrite_sub_query")
+@PromptABC.register("baml_rewrite_sub_query")
 class DefaultRewriteSubQuery(PromptABC):
     template_zh = "rwsq"
     template_en = "rwsq"
@@ -20,4 +20,4 @@ class DefaultRewriteSubQuery(PromptABC):
     def parse_response(self, response: str, **kwargs):
         response = b.RewriteSubQuery(kwargs['history_qa'],kwargs['question'])
         logger.debug(f"rewrite sub query:{response}")
-        return response
+        return response.rewritten_question

@@ -49,47 +49,46 @@ function LogicFromPlan(question: string) -> Plans {
     ],
     "examples": [
         {
-            "query": "Which sports team for which Cristiano Ronaldo played in 2011 was founded last ?",
-            "answer": [ {"Step":"Which Sports Teams Cristiano Ronaldo Played for in 2011 ?",
-                         "Action" : "get_spo(s=s1:Player[Cristiano Ronaldo],p=p1:PlayedForIn2011Year,o=o1:SportsTeam)"},
-                        {"Step": "In which year were these teams established ?",
-                         "Action": "get_spo(s=o1,p=p2:FoundationYear,o=o2:Year)"},
-                        {"Step": "Which team was founded last ?",
-                         "Action": "sort(set=o1, orderby=o2, direction=max, limit=1)"}
+            "query": "Which sports team for which Cristiano Ronaldo played in 2011 was founded last?",
+            "answer": [ {"step":"Which Sports Teams Cristiano Ronaldo Played for in 2011?",
+                         "action" : "get_spo(s=s1:Player[Cristiano Ronaldo],p=p1:PlayedForIn2011Year,o=o1:SportsTeam)"},
+                        {"step": "In which year were these teams established?",
+                         "action": "get_spo(s=o1,p=p2:FoundationYear,o=o2:Year)"},
+                        {"step": "Which team was founded last?",
+                         "action": "sort(set=o1, orderby=o2, direction=max, limit=1)"}
                       ]
         },
         {
             "query": "Who was the first president of the association which published Journal of Psychotherapy Integration?",
-            "answer": [ {"Step": "Which association that publishes the Journal of Psychotherapy Integration ?",
-                         "Action":"Journal(s=s1:Player[Psychotherapy Integration],p=p1:Publish,o=o1:Association)"},
-                        {"Step": "Who was the first president of that specific association?",
-                        "Action":"get_spo(s=o1,p=p2:FirstPresident,o=o2:Person)"}
+            "answer": [ {"step": "Which association that publishes the Journal of Psychotherapy Integration?",
+                         "action":"Journal(s=s1:Player[Psychotherapy Integration],p=p1:Publish,o=o1:Association)"},
+                        {"step": "Who was the first president of that specific association?",
+                        "action":"get_spo(s=o1,p=p2:FirstPresident,o=o2:Person)"}
                       ]
         },
         {
             "query": "When did the state where Pocahontas Mounds is located become part of the United States?",
-            "answer": [ {"Step": "Which State Where Pocahontas Mounds is Located ?",
-                         "Action": "get_spo(s=s1:HistoricalSite[Pocahontas Mounds], p=p1:LocatedIn, o=o1:State)"},
-                        {"Step":"When did this state become a part of the United States ？",
-                         "Action": "get_spo(s=o1, p=p2:YearOfBecamingPartofTheUnitedStates, o=o2:Date)"}
+            "answer": [ {"step": "Which State Where Pocahontas Mounds is Located?",
+                         "action": "get_spo(s=s1:HistoricalSite[Pocahontas Mounds], p=p1:LocatedIn, o=o1:State)"},
+                        {"step":"When did this state become a part of the United States？",
+                         "action": "get_spo(s=o1, p=p2:YearOfBecamingPartofTheUnitedStates, o=o2:Date)"}
                       ]
         },
         {
             "query": "Which of the two tornado outbreaks killed the most people?",
-            "answer": [ {"Step": "Which is the first tornado outbreaks ?",
-                         "Action": "get_spo(s=s1:Event[Tornado Outbreak], p=p1:TheFirst, o=o1:Event)"},
-                         {"Step": "Which is the second tornado outbreaks ?",
-                          "Action": "get_spo(s=s2:Event[Tornado Outbreak], p=p2:TheSecond, o=o2:Event)"},
-                         { "Step": "How many people died in the first tornado outbreak ?",
-                           "Action": "get_spo(s=s1, p=p3:KilledPeopleNumber, o=o3:Number)"},
-                          { "Step": "How many people died in the second tornado outbreak ?",
-                           " Action": "get_spo(s=s2, p=p4:KilledPeopleNumber, o=o4:Number)"},
-                           { "Step": "To compare the death toll between two tornado outbreaks to determine which one had more fatalities.",
-                             "Action": "compare(set=[o3,o4], op=max)" }
+            "answer": [ {"step": "Which is the first tornado outbreaks?",
+                         "action": "get_spo(s=s1:Event[Tornado Outbreak], p=p1:TheFirst, o=o1:Event)"},
+                         {"step": "Which is the second tornado outbreaks?",
+                          "action": "get_spo(s=s2:Event[Tornado Outbreak], p=p2:TheSecond, o=o2:Event)"},
+                         { "step": "How many people died in the first tornado outbreak ?",
+                           "action": "get_spo(s=s1, p=p3:KilledPeopleNumber, o=o3:Number)"},
+                          { "step": "How many people died in the second tornado outbreak?",
+                           " action": "get_spo(s=s2, p=p4:KilledPeopleNumber, o=o4:Number)"},
+                           { "step": "To compare the death toll between two tornado outbreaks to determine which one had more fatalities.",
+                             "action": "compare(set=[o3,o4], op=max)" }
                       }
         }
     ],
-    "output_format": "Only output words in answer, for examples: `Step`, `Action` content",
     "query": {{ question }}
     }     
 

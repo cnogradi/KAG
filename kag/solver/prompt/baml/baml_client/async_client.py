@@ -424,6 +424,33 @@ class BamlAsyncClient:
       )
       return cast(types.QNers, raw.cast_to(types, types, partial_types, False))
     
+    async def QuestionSummary(
+        self,
+        history: str,question: str,docs: List[str],
+        baml_options: BamlCallOptions = {},
+    ) -> types.QuestionSummaryAnswer:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+      raw = await self.__runtime.call_function(
+        "QuestionSummary",
+        {
+          "history": history,"question": question,"docs": docs,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+      return cast(types.QuestionSummaryAnswer, raw.cast_to(types, types, partial_types, False))
+    
     async def ReferenceGenerator(
         self,
         now: str,content: str,ref: str,query: str,
@@ -586,6 +613,33 @@ class BamlAsyncClient:
       )
       return cast(types.Verifier, raw.cast_to(types, types, partial_types, False))
     
+    async def RetrieverStaticPlanning(
+        self,
+        executors: str,query: str,
+        baml_options: BamlCallOptions = {},
+    ) -> types.STasks:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+      raw = await self.__runtime.call_function(
+        "RetrieverStaticPlanning",
+        {
+          "executors": executors,"query": query,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+      return cast(types.STasks, raw.cast_to(types, types, partial_types, False))
+    
     async def RewriteSubQuery(
         self,
         history_qa: str,question: str,
@@ -666,6 +720,33 @@ class BamlAsyncClient:
         collectors,
       )
       return cast(types.SPOs, raw.cast_to(types, types, partial_types, False))
+    
+    async def SPORetrievalDecompose(
+        self,
+        question: str,
+        baml_options: BamlCallOptions = {},
+    ) -> types.SPODecomposes:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+      raw = await self.__runtime.call_function(
+        "SPORetrievalDecompose",
+        {
+          "question": question,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+      return cast(types.SPODecomposes, raw.cast_to(types, types, partial_types, False))
     
     async def SelfCognition(
         self,
@@ -774,6 +855,141 @@ class BamlAsyncClient:
         collectors,
       )
       return cast(types.SolveNoSPO, raw.cast_to(types, types, partial_types, False))
+    
+    async def StaticPlanningPrompt(
+        self,
+        executors: str,query: str,
+        baml_options: BamlCallOptions = {},
+    ) -> types.STasks:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+      raw = await self.__runtime.call_function(
+        "StaticPlanningPrompt",
+        {
+          "executors": executors,"query": query,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+      return cast(types.STasks, raw.cast_to(types, types, partial_types, False))
+    
+    async def SubQuestionSummary(
+        self,
+        history: str,question: str,knowledge_graph: str,docs: List[str],
+        baml_options: BamlCallOptions = {},
+    ) -> types.SubQuestionSummaryAnswer:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+      raw = await self.__runtime.call_function(
+        "SubQuestionSummary",
+        {
+          "history": history,"question": question,"knowledge_graph": knowledge_graph,"docs": docs,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+      return cast(types.SubQuestionSummaryAnswer, raw.cast_to(types, types, partial_types, False))
+    
+    async def ToughtIterativePlanning(
+        self,
+        example_executors: str,query: str,context: str,executors: List[str],
+        baml_options: BamlCallOptions = {},
+    ) -> types.Executor:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+      raw = await self.__runtime.call_function(
+        "ToughtIterativePlanning",
+        {
+          "example_executors": example_executors,"query": query,"context": context,"executors": executors,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+      return cast(types.Executor, raw.cast_to(types, types, partial_types, False))
+    
+    async def ToughtThenAnswer(
+        self,
+        cur_question: str,questions: str,docs: str,
+        baml_options: BamlCallOptions = {},
+    ) -> types.TTA:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+      raw = await self.__runtime.call_function(
+        "ToughtThenAnswer",
+        {
+          "cur_question": cur_question,"questions": questions,"docs": docs,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+      return cast(types.TTA, raw.cast_to(types, types, partial_types, False))
+    
+    async def WithoutRefGenerator(
+        self,
+        now: str,content: str,query: str,
+        baml_options: BamlCallOptions = {},
+    ) -> types.WRG:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+      raw = await self.__runtime.call_function(
+        "WithoutRefGenerator",
+        {
+          "now": now,"content": content,"query": query,
+        },
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+      return cast(types.WRG, raw.cast_to(types, types, partial_types, False))
     
 
 
@@ -1197,6 +1413,41 @@ class BamlStreamClient:
         self.__ctx_manager.get(),
       )
     
+    def QuestionSummary(
+        self,
+        history: str,question: str,docs: List[str],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlStream[partial_types.QuestionSummaryAnswer, types.QuestionSummaryAnswer]:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+      raw = self.__runtime.stream_function(
+        "QuestionSummary",
+        {
+          "history": history,
+          "question": question,
+          "docs": docs,
+        },
+        None,
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+
+      return baml_py.BamlStream[partial_types.QuestionSummaryAnswer, types.QuestionSummaryAnswer](
+        raw,
+        lambda x: cast(partial_types.QuestionSummaryAnswer, x.cast_to(types, types, partial_types, True)),
+        lambda x: cast(types.QuestionSummaryAnswer, x.cast_to(types, types, partial_types, False)),
+        self.__ctx_manager.get(),
+      )
+    
     def ReferenceGenerator(
         self,
         now: str,content: str,ref: str,query: str,
@@ -1403,6 +1654,40 @@ class BamlStreamClient:
         self.__ctx_manager.get(),
       )
     
+    def RetrieverStaticPlanning(
+        self,
+        executors: str,query: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlStream[partial_types.STasks, types.STasks]:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+      raw = self.__runtime.stream_function(
+        "RetrieverStaticPlanning",
+        {
+          "executors": executors,
+          "query": query,
+        },
+        None,
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+
+      return baml_py.BamlStream[partial_types.STasks, types.STasks](
+        raw,
+        lambda x: cast(partial_types.STasks, x.cast_to(types, types, partial_types, True)),
+        lambda x: cast(types.STasks, x.cast_to(types, types, partial_types, False)),
+        self.__ctx_manager.get(),
+      )
+    
     def RewriteSubQuery(
         self,
         history_qa: str,question: str,
@@ -1503,6 +1788,39 @@ class BamlStreamClient:
         raw,
         lambda x: cast(partial_types.SPOs, x.cast_to(types, types, partial_types, True)),
         lambda x: cast(types.SPOs, x.cast_to(types, types, partial_types, False)),
+        self.__ctx_manager.get(),
+      )
+    
+    def SPORetrievalDecompose(
+        self,
+        question: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlStream[partial_types.SPODecomposes, types.SPODecomposes]:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+      raw = self.__runtime.stream_function(
+        "SPORetrievalDecompose",
+        {
+          "question": question,
+        },
+        None,
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+
+      return baml_py.BamlStream[partial_types.SPODecomposes, types.SPODecomposes](
+        raw,
+        lambda x: cast(partial_types.SPODecomposes, x.cast_to(types, types, partial_types, True)),
+        lambda x: cast(types.SPODecomposes, x.cast_to(types, types, partial_types, False)),
         self.__ctx_manager.get(),
       )
     
@@ -1642,6 +1960,182 @@ class BamlStreamClient:
         raw,
         lambda x: cast(partial_types.SolveNoSPO, x.cast_to(types, types, partial_types, True)),
         lambda x: cast(types.SolveNoSPO, x.cast_to(types, types, partial_types, False)),
+        self.__ctx_manager.get(),
+      )
+    
+    def StaticPlanningPrompt(
+        self,
+        executors: str,query: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlStream[partial_types.STasks, types.STasks]:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+      raw = self.__runtime.stream_function(
+        "StaticPlanningPrompt",
+        {
+          "executors": executors,
+          "query": query,
+        },
+        None,
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+
+      return baml_py.BamlStream[partial_types.STasks, types.STasks](
+        raw,
+        lambda x: cast(partial_types.STasks, x.cast_to(types, types, partial_types, True)),
+        lambda x: cast(types.STasks, x.cast_to(types, types, partial_types, False)),
+        self.__ctx_manager.get(),
+      )
+    
+    def SubQuestionSummary(
+        self,
+        history: str,question: str,knowledge_graph: str,docs: List[str],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlStream[partial_types.SubQuestionSummaryAnswer, types.SubQuestionSummaryAnswer]:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+      raw = self.__runtime.stream_function(
+        "SubQuestionSummary",
+        {
+          "history": history,
+          "question": question,
+          "knowledge_graph": knowledge_graph,
+          "docs": docs,
+        },
+        None,
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+
+      return baml_py.BamlStream[partial_types.SubQuestionSummaryAnswer, types.SubQuestionSummaryAnswer](
+        raw,
+        lambda x: cast(partial_types.SubQuestionSummaryAnswer, x.cast_to(types, types, partial_types, True)),
+        lambda x: cast(types.SubQuestionSummaryAnswer, x.cast_to(types, types, partial_types, False)),
+        self.__ctx_manager.get(),
+      )
+    
+    def ToughtIterativePlanning(
+        self,
+        example_executors: str,query: str,context: str,executors: List[str],
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlStream[partial_types.Executor, types.Executor]:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+      raw = self.__runtime.stream_function(
+        "ToughtIterativePlanning",
+        {
+          "example_executors": example_executors,
+          "query": query,
+          "context": context,
+          "executors": executors,
+        },
+        None,
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+
+      return baml_py.BamlStream[partial_types.Executor, types.Executor](
+        raw,
+        lambda x: cast(partial_types.Executor, x.cast_to(types, types, partial_types, True)),
+        lambda x: cast(types.Executor, x.cast_to(types, types, partial_types, False)),
+        self.__ctx_manager.get(),
+      )
+    
+    def ToughtThenAnswer(
+        self,
+        cur_question: str,questions: str,docs: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlStream[partial_types.TTA, types.TTA]:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+      raw = self.__runtime.stream_function(
+        "ToughtThenAnswer",
+        {
+          "cur_question": cur_question,
+          "questions": questions,
+          "docs": docs,
+        },
+        None,
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+
+      return baml_py.BamlStream[partial_types.TTA, types.TTA](
+        raw,
+        lambda x: cast(partial_types.TTA, x.cast_to(types, types, partial_types, True)),
+        lambda x: cast(types.TTA, x.cast_to(types, types, partial_types, False)),
+        self.__ctx_manager.get(),
+      )
+    
+    def WithoutRefGenerator(
+        self,
+        now: str,content: str,query: str,
+        baml_options: BamlCallOptions = {},
+    ) -> baml_py.BamlStream[partial_types.WRG, types.WRG]:
+      options: BamlCallOptions = {**self.__baml_options, **(baml_options or {})}
+      __tb__ = options.get("tb", None)
+      if __tb__ is not None:
+        tb = __tb__._tb # type: ignore (we know how to use this private attribute)
+      else:
+        tb = None
+      __cr__ = options.get("client_registry", None)
+      collector = options.get("collector", None)
+      collectors = collector if isinstance(collector, list) else [collector] if collector is not None else []
+      raw = self.__runtime.stream_function(
+        "WithoutRefGenerator",
+        {
+          "now": now,
+          "content": content,
+          "query": query,
+        },
+        None,
+        self.__ctx_manager.get(),
+        tb,
+        __cr__,
+        collectors,
+      )
+
+      return baml_py.BamlStream[partial_types.WRG, types.WRG](
+        raw,
+        lambda x: cast(partial_types.WRG, x.cast_to(types, types, partial_types, True)),
+        lambda x: cast(types.WRG, x.cast_to(types, types, partial_types, False)),
         self.__ctx_manager.get(),
       )
     

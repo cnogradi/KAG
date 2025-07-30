@@ -16,7 +16,7 @@ from kag.interface import PromptABC
 
 from .baml_client.sync_client import b
 
-@PromptABC.register("default_query_rewrite")
+@PromptABC.register("baml_query_rewrite")
 class QueryRewritePrompt(PromptABC):
     template_zh = "qwp"
 
